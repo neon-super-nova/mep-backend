@@ -3,26 +3,25 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+let db = null;
 const uri = process.env.MONGO_URI;
-const mongoClient = new MongoClient(uri);
-
-let db;
+const dbName = process.env.DB_NAME;
 
 export const connectDatabase = async () => {
+  const client = new MongoClient(uri);
   try {
-    await mongoClient.connect();
-    db = mongoClient.db();
-    console.log("Connected to mongo db");
+    await client.connect();
+    db = client.db(dbName);
+    console.log(`Connected to database: ${dbName}`);
   } catch (err) {
-    console.log("Connection failed, try again");
-    process.exit(1);
+    console.log("Database connection failed", err);
+    throw err;
   }
 };
 
-export const getDatabase = async () => {
+export const getDatabase = () => {
   if (!db) {
-    throw new Error("Database not found");
-  } else {
-    return db;
+    throw new Error("Database not initialized");
   }
+  return db;
 };
