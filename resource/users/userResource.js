@@ -7,6 +7,7 @@ class UserResource {
   }
   initRoutes() {
     this.router.post("/register", this.register.bind(this));
+    this.router.post("/login", this.login.bind(this));
   }
 
   async register(req, res) {
