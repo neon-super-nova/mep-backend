@@ -28,6 +28,23 @@ class UserStore {
       firstName: newUser.firstName,
       lastName: newUser.lastName,
     };
+
+    if (newUser.facebookToken) {
+      newUserData.facebookToken = newUser.facebookToken;
+    }
+
+    if (newUser.googleToken) {
+      newUserData.googleToken = newUser.googleToken;
+    }
+
+    if (newUser.appleToken) {
+      newUserData.appleToken = newUser.appleToken;
+    }
+
+    if (newUser.oauthProvider) {
+      userData.oauthProvider = newUser.oauthProvider;
+    }
+
     await this.collection.insertOne(newUserData);
   }
 
@@ -38,11 +55,30 @@ class UserStore {
     if (!foundUser) {
       return "USER_NOT_FOUND";
     }
-    const isPasswordCorrect = await bcrypt.compare(
-      user.password,
-      foundUser.password
-    );
-    return isPasswordCorrect ? "SUCCESS" : "CREDENTIAL_MISMATCH";
+
+    if (user.password) {
+      const isPasswordCorrect = await bcrypt.compare(
+        user.password,
+        foundUser.password
+      );
+      return isPasswordCorrect ? "SUCCESS" : "CREDENTIAL_MISMATCH";
+    }
+
+    if (user.oauthProvider) {
+      const oauthTokenField = `${user.oauthProvider}Token`; // e.g., "facebookToken"
+
+      // Check if the OAuth token matches the stored token
+      if (
+        foundUser[oauthTokenField] &&
+        foundUser[oauthTokenField] === user.oauthToken
+      ) {
+        return "SUCCESS";
+      } else {
+        return "CREDENTIAL_MISMATCH";
+      }
+    }
+
+    return "CREDENTIALS_MISMATCH";
   }
 }
 

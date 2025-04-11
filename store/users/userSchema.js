@@ -7,4 +7,12 @@ export const userSchema = {
   firstName: String,
   lastName: String,
   email: String,
+  facebookToken: { type: String, default: null },
+  googleToken: { type: String, default: null },
+  appleToken: { type: String, default: null },
+  oauthProvider: {
+    type: String,
+    enum: ["facebook", "google", "apple"],
+    default: null,
+  },
 };
