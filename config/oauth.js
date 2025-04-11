@@ -1,7 +1,7 @@
 import passport from "passport";
 import { OAuth2Strategy as GoogleStrategy } from "passport";
 
-export function configureGooglePassport = () => {
+export function configureGooglePassport() {
   passport.use(
     new GoogleStrategy(
       {
@@ -9,7 +9,7 @@ export function configureGooglePassport = () => {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: process.env.GOOGLE_CALLBACK_URL,
       },
-      async(accessToken, refreshToken, profile, done) => {
+      async (accessToken, refreshToken, profile, done) => {
         const user = {
           googleId: profile.id,
           email: profile.emails[0].value,
@@ -17,8 +17,8 @@ export function configureGooglePassport = () => {
           image: profile.photos?.[0]?.value,
           accessToken,
         };
-        return done(null, user); 
+        return done(null, user);
       }
     )
   );
-};
+}
