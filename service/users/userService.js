@@ -1,4 +1,5 @@
 import { userStore } from "../../store/users/userStore.js";
+import { generateToken } from "../../config/jwt.js";
 
 class UserService {
   constructor() {
@@ -17,7 +18,8 @@ class UserService {
   async isAuthenticated(user) {
     const authenticationStatus = await this.userStore.isAuthenticated(user);
     if (authenticationStatus === "SUCCESS") {
-      return { success: true, message: "Login successful" };
+      const token = generateToken({ username: user.username });
+      return { success: true, token };
     } else if (authenticationStatus === "CREDENTIAL_MISMATCH") {
       return { success: false, message: "Password mismatch" };
     } else if (authenticationStatus === "USER_NOT_FOUND") {

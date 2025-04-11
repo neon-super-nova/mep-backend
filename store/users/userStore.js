@@ -19,15 +19,16 @@ class UserStore {
     if (existingUserCheck) {
       throw new Error("User already registered");
     }
-
-    const hashedPassword = await bcrypt.hash(newUser.password, 10);
     const newUserData = {
       username: newUser.username,
-      password: hashedPassword,
       email: newUser.email,
       firstName: newUser.firstName,
       lastName: newUser.lastName,
     };
+
+    if (newUser.password) {
+      newUserData.password = await bcrypt.hash(newUser.password, 10);
+    }
 
     if (newUser.facebookToken) {
       newUserData.facebookToken = newUser.facebookToken;
@@ -42,7 +43,7 @@ class UserStore {
     }
 
     if (newUser.oauthProvider) {
-      userData.oauthProvider = newUser.oauthProvider;
+      newUserData.oauthProvider = newUser.oauthProvider;
     }
 
     await this.collection.insertOne(newUserData);
@@ -67,7 +68,6 @@ class UserStore {
     if (user.oauthProvider) {
       const oauthTokenField = `${user.oauthProvider}Token`; // e.g., "facebookToken"
 
-      // Check if the OAuth token matches the stored token
       if (
         foundUser[oauthTokenField] &&
         foundUser[oauthTokenField] === user.oauthToken
