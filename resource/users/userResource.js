@@ -13,6 +13,7 @@ class UserResource {
       this.handleGoogleCallback.bind(this)
     );
     this.router.post("/logout", this.logout.bind(this));
+    this.router.get("/verify-email/:token", this.verifyEmail.bind(this));
   }
 
   async register(req, res) {
@@ -44,6 +45,17 @@ class UserResource {
       }
     } catch (error) {
       res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async verifyEmail(req, res) {
+    const { token } = req.params;
+    const result = await userService.verifyEmail(token);
+
+    if (result.success) {
+      res.status(200).send("Email successfully verified!");
+    } else {
+      res.status(400).send("Invalid or expired verification link.");
     }
   }
 

@@ -1,5 +1,6 @@
 import { userStore } from "../../store/users/userStore.js";
 import { generateToken } from "../../config/jwt.js";
+import { sendVerificationEmail } from "../../config/emailVerification.js";
 
 class UserService {
   constructor() {
@@ -9,6 +10,12 @@ class UserService {
   async addNewUser(userData) {
     try {
       await this.userStore.addNewUser(userData);
+      const verificationToken = generateToken(
+        { username: userData.username },
+        "1d"
+      );
+      await sendVerificationEmail(userData.email, verificationToken);
+
       return { success: true };
     } catch (err) {
       return { success: false, message: err.message };
