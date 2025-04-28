@@ -16,7 +16,7 @@ class UserService {
         { username: userData.username },
         "1d"
       );
-      // await sendVerificationEmail(userData.email, verificationToken);
+      await sendVerificationEmail(userData.email, verificationToken);
 
       return { success: true };
     } catch (err) {

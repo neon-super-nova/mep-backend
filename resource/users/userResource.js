@@ -93,6 +93,7 @@ class UserResource {
 
   async forgotPassword(req, res) {
     try {
+      console.log(req.body);
       const { email } = req.body;
       const result = await forgotPasswordService.requestPasswordReset(email);
       if (result === "User found. Email sent") {
@@ -101,6 +102,7 @@ class UserResource {
         res.status(404).json({ error: "Email not found" });
       }
     } catch (error) {
+      console.error(error);
       res.status(500).json({ error: "Server error" });
     }
   }

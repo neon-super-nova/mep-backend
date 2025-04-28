@@ -10,7 +10,11 @@ class ForgotPasswordService {
   }
 
   async requestPasswordReset(email) {
-    const userExists = await this.userStore.userExistsByEmail(email);
+    if (!email || typeof email != "string") {
+      throw new Error("Email is required");
+    }
+    const trimmedEmail = email.trim();
+    const userExists = await this.userStore.userExistsByEmail(trimmedEmail);
     if (!userExists) {
       return "User does not exist";
     }
@@ -20,12 +24,12 @@ class ForgotPasswordService {
     const expiration = new Date(now.getTime() + 60 * 60 * 1000);
     await this.forgotPasswordStore.createResetToken({
       token: generatedToken,
-      email: email,
+      email: trimmedEmail,
       expiresAt: expiration,
       used: false,
     });
 
-    await sendPasswordResetEmail(email, generatedToken);
+    await sendPasswordResetEmail(trimmedEmail, generatedToken);
     return "User found. Email sent";
   }
 }
