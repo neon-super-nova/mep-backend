@@ -1,5 +1,7 @@
 import express from "express";
 import { userService } from "../../service/users/userService.js";
+import { forgotPasswordService } from "../../service/forgotPassword/forgotPasswordService.js";
+
 class UserResource {
   constructor() {
     this.router = express.Router();
@@ -13,6 +15,7 @@ class UserResource {
       this.handleGoogleCallback.bind(this)
     );
     this.router.post("/logout", this.logout.bind(this));
+    this.router.post("/forgot-password", this.forgotPassword.bind(this));
     this.router.get("/verify-email/:token", this.verifyEmail.bind(this));
   }
 
@@ -81,6 +84,20 @@ class UserResource {
           .json({ message: "Login successful", token: result.token });
       } else {
         res.status(401).json({ error: result.message });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async forgotPassword(req, res) {
+    try {
+      const { email } = req.body;
+      const result = await forgotPasswordService.requestPasswordReset(email);
+      if (result === "User found. Email sent") {
+        res.status(200).json({ message: "Password reset email sent" });
+      } else {
+        res.status(404).json({ error: "Email not found" });
       }
     } catch (error) {
       res.status(500).json({ error: "Server error" });

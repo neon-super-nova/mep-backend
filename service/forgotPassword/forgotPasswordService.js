@@ -26,7 +26,7 @@ class ForgotPasswordService {
     });
 
     await sendPasswordResetEmail(email, generatedToken);
-    return "Email sent";
+    return "User found. Email sent";
   }
 }
 
