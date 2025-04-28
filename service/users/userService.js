@@ -1,10 +1,12 @@
 import { userStore } from "../../store/users/userStore.js";
 import { generateToken } from "../../config/jwt.js";
 import { sendVerificationEmail } from "../../config/emailVerification.js";
+import { forgotPasswordStore } from "../../store/forgotPassword/forgotPasswordStore.js";
 
 class UserService {
   constructor() {
     this.userStore = userStore;
+    this.forgotPasswordStore = forgotPasswordStore;
   }
 
   async addNewUser(userData) {
@@ -32,6 +34,18 @@ class UserService {
     } else if (authenticationStatus === "USER_NOT_FOUND") {
       return { success: false, message: "User not found" };
     }
+  }
+
+  async updatePassword(email, newPassword, token) {
+    const verifyToken = await this.forgotPasswordStore.findValidResetToken(
+      token
+    );
+    if (!verifyToken) {
+      return "Invalid token";
+    }
+    await this.userStore.updatePassword(email, newPassword);
+    await this.forgotPasswordStore.markTokenUsed(token);
+    return { success: true };
   }
 }
 

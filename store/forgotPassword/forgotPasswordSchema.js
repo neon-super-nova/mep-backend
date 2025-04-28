@@ -1,5 +1,3 @@
-import { Timestamp } from "mongodb";
-
 export const forgotPasswordCollection = "forgot-password";
 
 export const forgotPasswordSchema = {

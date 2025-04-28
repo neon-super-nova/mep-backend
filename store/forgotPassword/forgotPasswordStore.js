@@ -1,5 +1,5 @@
-import { getDatabase } from "../database";
-import { forgotPasswordCollection } from "./forgotPasswordSchema";
+import { getDatabase } from "../database.js";
+import { forgotPasswordCollection } from "./forgotPasswordSchema.js";
 
 class ForgotPasswordStore {
   constructor() {
@@ -27,7 +27,7 @@ class ForgotPasswordStore {
     const foundToken = await this.collection.findOne({
       token: token,
       used: false,
-      expiresAt: { $lt: now },
+      expiresAt: { $gt: now },
     });
 
     return foundToken;

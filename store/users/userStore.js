@@ -1,3 +1,4 @@
+import passport from "passport";
 import { getDatabase } from "../database.js";
 import bcrypt from "bcrypt";
 
@@ -90,6 +91,21 @@ class UserStore {
     }
 
     return "CREDENTIALS_MISMATCH";
+  }
+
+  async updatePassword(email, newPassword) {
+    const trimmedEmail = email.trim();
+    const trimmedPassword = newPassword.trim();
+    const userExists = await this.userExistsByEmail(trimmedEmail);
+    if (!userExists) {
+      return "User not found";
+    }
+    const newHashedPassword = await bcrypt.hash(trimmedPassword, 10);
+    await this.collection.updateOne(
+      { email: trimmedEmail },
+      { $set: { password: newHashedPassword } }
+    );
+    return "Password updated";
   }
 }
 
