@@ -12,6 +12,17 @@ class UserStore {
     console.log("Collection initialized successfully");
   }
 
+  async userExistsByEmail(email) {
+    const check = await this.collection.findOne({
+      email: email,
+    });
+    if (check) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   async addNewUser(newUser) {
     const existingUserCheck = await this.collection.findOne({
       $or: [{ username: newUser.username }, { email: newUser.email }],

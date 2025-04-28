@@ -12,10 +12,10 @@ class ForgotPasswordStore {
     console.log("ForgotPassword collection successfully initialized");
   }
 
-  async createResetToken({ email, token, expiresAt }) {
+  async createResetToken({ token, email, expiresAt }) {
     const newToken = {
-      user_email: email,
       token: token,
+      user_email: email,
       expiresAt: expiresAt,
       used: false,
     };

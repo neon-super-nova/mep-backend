@@ -8,13 +8,14 @@ export async function sendVerificationEmail(to, token) {
       pass: process.env.EMAIL_PASSWORD,
     },
   });
-  const verificationURL = `http://localhost:3000/api/users/verify-email/${token}`;
-  const mail = {
-    from: '"Your App" <no-reply@yourapp.com>',
+  // link to the frontend page
+  const verificationURL = `http://localhost:3000/verify-email/${token}`;
+  const email = {
+    from: "Mise en Plate <mep.miseenplate@gmail.com>",
     to,
     subject: "Verify Your Email",
     html: `<p>Click the link to verify your email:</p>
            <a href="${verificationURL}">${verificationURL}</a>`,
   };
-  await transporter.sendMail(mail);
+  await transporter.sendMail(email);
 }
