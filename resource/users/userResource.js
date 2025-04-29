@@ -15,6 +15,7 @@ class UserResource {
       "/auth/google/callback",
       this.handleGoogleCallback.bind(this)
     );
+    this.router.patch("/:userId", this.updateUser.bind(this));
     this.router.post("/logout", this.logout.bind(this));
     this.router.post("/forgot-password", this.forgotPassword.bind(this));
     this.router.post("/reset-password", this.resetPassword.bind(this));
@@ -134,8 +135,42 @@ class UserResource {
     }
   }
 
+  async updateUser(req, res) {
+    const { userId } = req.params;
+    const patchFields = req.body;
+
+    const allowedFields = ["username", "firstName", "lastName"];
+    const inputtedFields = {};
+
+    for (const field of allowedFields) {
+      if (patchFields[field] !== undefined) {
+        inputtedFields[field] = patchFields[field];
+      }
+    }
+
+    if (Object.keys(inputtedFields).length === 0) {
+      return res.status(400).json({ error: "Empty fields" });
+    }
+
+    try {
+      const result = await userService.patchUser(userId, inputtedFields);
+      console.log("Update result:", result);
+      if (result.success) {
+        return res
+          .status(200)
+          .json({ message: "Updates were successfully made" });
+      } else {
+        return res
+          .status(400)
+          .json({ error: result.message || "Update failed" });
+      }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
   async logout(req, res) {
-    const currUser = req.user;
     res.status(200).json({ message: "logout successfully" });
   }
 }

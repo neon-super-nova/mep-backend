@@ -1,6 +1,7 @@
 import passport from "passport";
 import { getDatabase } from "../database.js";
 import bcrypt from "bcrypt";
+import { ObjectId } from "mongodb";
 
 class UserStore {
   constructor() {
@@ -106,6 +107,16 @@ class UserStore {
       { $set: { password: newHashedPassword } }
     );
     return "Password updated";
+  }
+
+  async patchUser(userId, patchFields) {
+    const objectId = ObjectId.createFromHexString(userId);
+    const result = await this.collection.updateOne(
+      { _id: objectId },
+      { $set: patchFields }
+    );
+    // true if 1 (only possible number of updates) was modified
+    return result.modifiedCount > 0;
   }
 }
 

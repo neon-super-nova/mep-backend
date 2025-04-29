@@ -14,7 +14,7 @@ export async function sendPasswordResetEmail(to, token) {
     from: "Mise en Plate <mep.miseeneplate@gmail.com>",
     to: to,
     subject: "Reset your password",
-    html: `<p>Click the link to reset your password. Link expires in 1 hour</p>
+    html: `<p>Click the link to reset your password. Link expires in 1 hour.</p>
           <a href="${resetURL}"> ${resetURL} </a>`,
   };
   await transporter.sendMail(email);

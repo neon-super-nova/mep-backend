@@ -47,6 +47,15 @@ class UserService {
     await this.forgotPasswordStore.markTokenUsed(token);
     return { success: true };
   }
+
+  async patchUser(userId, pathFields) {
+    const update = await this.userStore.patchUser(userId, pathFields);
+    if (update) {
+      return { success: true };
+    } else {
+      return { success: false, message: "No changes made or user not found" };
+    }
+  }
 }
 
 export const userService = new UserService();
