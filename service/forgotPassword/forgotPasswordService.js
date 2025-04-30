@@ -1,7 +1,7 @@
 import { forgotPasswordStore } from "../../store/forgotPassword/forgotPasswordStore.js";
 import { userStore } from "../../store/users/userStore.js";
 import crypto from "crypto";
-import { sendPasswordResetEmail } from "../../config/forgotPasswordEmail.js";
+import { sendPasswordResetEmail } from "../../config/serverEmails/forgotPasswordEmail.js";
 
 class ForgotPasswordService {
   constructor() {
