@@ -1,0 +1,26 @@
+export const listOfRecipeSubcategories = {
+  "Latin American": [
+    "Peruvian",
+    "Mexican",
+    "Brazilian",
+    "Colombian",
+    "Cuban",
+    "Other",
+  ],
+  Caribbean: ["Jamaican", "Haitian", "Dominican", "Other"],
+  "North American": ["Southern American", "Tex-Mex", "Cajun", "Other"],
+  "Middle Eastern": ["Turkish", "Lebanese", "Persian", "Other"],
+  "East Asian": ["Chinese", "Japanese", "Korean", "Other"],
+  "Southeast Asian": ["Thai", "Vietnamese", "Filipino", "Other"],
+  "South Asian": ["Nepali", "Indian", "Pakistani", "Other"],
+  European: ["Italian", "French", "Spanish", "German", "Greek", "Other"],
+  African: [
+    "Ethiopian",
+    "Nigerian",
+    "Moroccan",
+    "Ghanian",
+    "Egyptian",
+    "Other",
+  ],
+  "Hawaiian / Pacific Islands": ["Hawaiian", "Fijian", "Other"],
+};

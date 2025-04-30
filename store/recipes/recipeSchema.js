@@ -17,6 +17,7 @@ export const recipeSchema = {
       "North American",
       "Middle Eastern",
       "East Asian",
+      "Southeast Asian",
       "South Asian",
       "European",
       "African",
