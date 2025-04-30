@@ -1,6 +1,6 @@
 import { userStore } from "../../store/users/userStore.js";
 import { generateToken } from "../../config/jwt.js";
-import { sendVerificationEmail } from "../../config/emailVerification.js";
+import { sendVerificationEmail } from "../../config/serverEmails/emailVerification.js";
 import { forgotPasswordStore } from "../../store/forgotPassword/forgotPasswordStore.js";
 
 class UserService {
