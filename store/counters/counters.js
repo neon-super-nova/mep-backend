@@ -1,3 +1,4 @@
+// currently not used since we are only relying on ObjectId mongodb default id
 import { getDatabase } from "../database.js";
 
 const db = getDatabase();

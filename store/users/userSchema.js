@@ -1,7 +1,7 @@
 export const userCollection = "users";
 
 export const userSchema = {
-  userId: Number,
+  // no need to assign a userId, mongoDb is already assigning one as { _id }
   username: String,
   password: String,
   firstName: String,
