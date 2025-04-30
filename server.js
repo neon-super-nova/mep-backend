@@ -9,6 +9,7 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 8080;
+
 app.use(express.json());
 app.use(
   cors({
@@ -19,7 +20,6 @@ app.use(
 
 connectDatabase()
   .then(async () => {
-    // important! always initialize all databases since we do not initialize them by default!
     await userStore.init();
     await forgotPasswordStore.init();
     app.use("/api/users", userResource.router);
