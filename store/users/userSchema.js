@@ -16,4 +16,12 @@ export const userSchema = {
     enum: ["facebook", "google", "apple"],
     default: null,
   },
+  verified: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: {
+    type: String,
+    default: null,
+  },
 };

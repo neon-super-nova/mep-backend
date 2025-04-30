@@ -37,6 +37,8 @@ class UserStore {
       email: newUser.email,
       firstName: newUser.firstName,
       lastName: newUser.lastName,
+      verified: false,
+      verificationToken: newUser.verificationToken,
     };
 
     if (newUser.password) {
@@ -92,6 +94,18 @@ class UserStore {
     }
 
     return "CREDENTIALS_MISMATCH";
+  }
+
+  async verifyEmail(token) {
+    const user = await this.collection.findOne({ verificationToken: token });
+    if (!user) {
+      return "Invalid token";
+    }
+    await this.collection.updateOne(
+      { _id: user._id },
+      { $set: { verified: true }, $unset: { verificationToken: "" } }
+    );
+    return "Email successfully verified";
   }
 
   async updatePassword(email, newPassword) {

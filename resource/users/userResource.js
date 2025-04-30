@@ -54,13 +54,16 @@ class UserResource {
   }
 
   async verifyEmail(req, res) {
-    const { token } = req.params;
-    const result = await userService.verifyEmail(token);
-
-    if (result.success) {
-      res.status(200).send("Email successfully verified!");
-    } else {
-      res.status(400).send("Invalid or expired verification link.");
+    try {
+      const { token } = req.params;
+      const result = await userService.verifyEmail(token);
+      if (result.success) {
+        res.status(200).send("Email successfully verified!");
+      } else {
+        res.status(400).send("Invalid or expired verification link.");
+      }
+    } catch (error) {
+      res.status(500).send("Server error");
     }
   }
 
