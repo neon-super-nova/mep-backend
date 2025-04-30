@@ -1,5 +1,5 @@
 import { userStore } from "../../store/users/userStore.js";
-import { generateToken } from "../../config/jwt.js";
+import { generateToken } from "../../config/serverSessions/jwt.js";
 import { sendVerificationEmail } from "../../config/serverEmails/emailVerification.js";
 import { forgotPasswordStore } from "../../store/forgotPassword/forgotPasswordStore.js";
 
@@ -11,13 +11,17 @@ class UserService {
 
   async addNewUser(userData) {
     try {
-      await this.userStore.addNewUser(userData);
       const verificationToken = generateToken(
         { username: userData.username },
         "1d"
       );
+      // add verificationToken to userData to send to store
+      const newUserDataWithToken = {
+        ...userData,
+        verificationToken,
+      };
+      await this.userStore.addNewUser(newUserDataWithToken);
       await sendVerificationEmail(userData.email, verificationToken);
-
       return { success: true };
     } catch (err) {
       return { success: false, message: err.message };
@@ -33,6 +37,15 @@ class UserService {
       return { success: false, message: "Password mismatch" };
     } else if (authenticationStatus === "USER_NOT_FOUND") {
       return { success: false, message: "User not found" };
+    }
+  }
+
+  async verifyEmail(token) {
+    const isVerified = await this.userStore.verifyEmail(token);
+    if (isVerified === "Email successfully verified") {
+      return { success: true };
+    } else {
+      return { success: false };
     }
   }
 

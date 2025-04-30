@@ -1,1 +1,2 @@
-.env
+.env.env
+-e \n.DS_Store\n.env.save
