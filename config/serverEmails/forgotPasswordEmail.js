@@ -9,13 +9,15 @@ export async function sendPasswordResetEmail(to, token) {
     },
   });
   // link to the frontend page where user will be able to change their password
-  const resetURL = `https://localhost:3000/reset-password/${token}`;
+  const resetURL = `https://localhost:3000/reset-password`;
   const email = {
     from: "Mise en Plate <mep.miseeneplate@gmail.com>",
     to: to,
-    subject: "Reset your password",
-    html: `<p>Click the link to reset your password. Link expires in 1 hour.</p>
-          <a href="${resetURL}"> ${resetURL} </a>`,
+    subject: "Reset Your Password",
+    html: `<p>To reset your password, please click the link below:</p>
+          <a href="${resetURL}">${resetURL}</a>
+          <p>Use the following temporary password to complete the reset process:</p>
+          <p><strong>${token}</strong></p>`,
   };
   await transporter.sendMail(email);
 }

@@ -22,6 +22,7 @@ connectDatabase()
   .then(async () => {
     await userStore.init();
     await forgotPasswordStore.init();
+    // await recipeStore.init();
     app.use("/api/users", userResource.router);
 
     app.get("/", (req, res) => {

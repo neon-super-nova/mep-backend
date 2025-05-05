@@ -9,13 +9,15 @@ export async function sendVerificationEmail(to, token) {
     },
   });
   // link to the frontend page
-  const verificationURL = `http://localhost:3000/verify-email/${token}`;
+  const verificationURL = `http://localhost:3000/verify-email`;
   const email = {
     from: "Mise en Plate <mep.miseenplate@gmail.com>",
-    to,
-    subject: "Verify Your Email",
-    html: `<p>Click the link to verify your email:</p>
-           <a href="${verificationURL}">${verificationURL}</a>`,
+    to: to,
+    subject: "Verify Your Email Address",
+    html: `<p>Please verify your email address by clicking the link below:</p>
+          <a href="${verificationURL}">${verificationURL}</a>
+          <p>Use the following verification key if prompted:</p>
+          <p><strong>${token}</strong></p>`,
   };
   await transporter.sendMail(email);
 }
