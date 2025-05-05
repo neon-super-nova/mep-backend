@@ -119,6 +119,7 @@ class UserResource {
         newPassword,
         token
       );
+
       if (result.success) {
         res.status(200).json({ message: "Password was successfully changed" });
       } else {

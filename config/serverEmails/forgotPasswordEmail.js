@@ -9,7 +9,7 @@ export async function sendPasswordResetEmail(to, token) {
     },
   });
   // link to the frontend page where user will be able to change their password
-  const resetURL = `https://localhost:3000/reset-password`;
+  const resetURL = `http://localhost:3000/resetpassword`;
   const email = {
     from: "Mise en Plate <mep.miseeneplate@gmail.com>",
     to: to,
