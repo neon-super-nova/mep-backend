@@ -24,6 +24,7 @@ class RecipeStore {
     const objectId = ObjectId.createFromHex(recipeId);
     use this objectId to find the recipe and update with the fields specified
     update inputted fields
+    updateOne({filter}, {recipeFields})
   }
 
   async deleteRecipe(){
