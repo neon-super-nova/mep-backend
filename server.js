@@ -5,6 +5,10 @@ import { connectDatabase } from "./store/database.js";
 import { userStore } from "./store/users/userStore.js";
 import { forgotPasswordStore } from "./store/forgotPassword/forgotPasswordStore.js";
 import { userResource } from "./resource/users/userResource.js";
+import { recipeStore } from "./store/recipes/recipeStore.js";
+import { recipeResource } from "./resource/recipes/recipeResource.js";
+
+
 dotenv.config();
 
 const app = express();
@@ -23,8 +27,10 @@ connectDatabase()
   .then(async () => {
     await userStore.init();
     await forgotPasswordStore.init();
-    // await recipeStore.init();
+    await recipeStore.init();
     app.use("/api/users", userResource.router);
+    app.use("/api/recipes", recipeResource.router);
+
 
     app.get("/", (req, res) => {
       res.send("Server is working");

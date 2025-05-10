@@ -1,13 +1,223 @@
-import { recipeService } from "../../service/recipes/recipeService";
+import express from "express";
+import { recipeService } from "../../service/recipes/recipeService.js";
 
 class RecipeResource {
   constructor() {
-    this.recipeService = recipeResource;
+    this.router = express.Router();
+    this.recipeService = recipeService;
     this.initRoutes();
   }
 
   initRoutes() {
-    //all routes go here
+    this.router.post("/add-recipe", this.addRecipe.bind(this));
+    this.router.get(
+      "/get-recipe-by-name/:recipeName",
+      this.getRecipeByName.bind(this)
+    );
+    this.router.get(
+      "/get-recipe-by-ingredients/:recipeIngredient",
+      this.getRecipeByIngredients.bind(this)
+    );
+    this.router.get(
+      "/get-recipe-by-cuisine-region/:recipeRegion",
+      this.getRecipeByCuisineRegion.bind(this)
+    );
+    this.router.get(
+      "/get-recipe-by-protein-choice/:recipeProtein",
+      this.getRecipeByProteinChoice.bind(this)
+    );
+    this.router.get(
+      "/get-recipe-by-dietary-restriction/:recipeDietary",
+      this.getRecipeByDietaryRestriction.bind(this)
+    );
+    this.router.get(
+      "/get-recipe-by-religious-restriction/:recipeReligious",
+      this.getRecipeByReligiousRestriction.bind(this)
+    );
+    this.router.put("/update-recipe/:recipeId", this.updateRecipe.bind(this));
+    this.router.delete(
+      "/delete-recipe/:recipeId",
+      this.deleteRecipe.bind(this)
+    );
+    /*this.router.post("/id/:imageId", this.uploadImage.bind(this));*/
   }
+
+  async addRecipe(req, res) {
+    const {
+      userId,
+      name,
+      ingredients,
+      instructions,
+      imageUrl,
+      cuisineRegion,
+      proteinChoice,
+      dietaryRestriction,
+      religiousRestriction,
+    } = req.body;
+    try {
+      const recipe = {
+        userId,
+        name,
+        ingredients,
+        instructions,
+        imageUrl,
+        cuisineRegion,
+        proteinChoice,
+        dietaryRestriction,
+        religiousRestriction,
+      };
+      const result = await this.recipeService.addRecipe(recipe);
+      res
+        .status(200)
+        .json({ message: "Recipe successfully added", recipeId: result });
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getRecipeByName(req, res) {
+    try {
+      const recipeName = req.params.recipeName;
+      const recipe = await this.recipeService.getRecipeByName(recipeName);
+      if (recipe) {
+        res.status(200).json(recipe);
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getRecipeByIngredients(req, res) {
+    try {
+      const recipeIngredient = req.params.recipeIngredient;
+      const recipe = await this.recipeService.getRecipeByIngredients(
+        recipeIngredient
+      );
+      if (recipe) {
+        res.status(200).json(recipe);
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getRecipeByCuisineRegion(req, res) {
+    try {
+      const recipeRegion = req.params.recipeRegion;
+      const recipe = await this.recipeService.getRecipeByCuisineRegion(
+        recipeRegion
+      );
+      if (recipe) {
+        res.status(200).json(recipe);
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getRecipeByProteinChoice(req, res) {
+    try {
+      const recipeProtein = req.params.recipeProtein;
+      const recipe = await this.recipeService.getRecipeByProteinChoice(
+        recipeProtein
+      );
+      if (recipe) {
+        res.status(200).json(recipe);
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getRecipeByDietaryRestriction(req, res) {
+    try {
+      const recipeDiet = req.params.recipeDietary;
+      const recipe = await this.recipeService.getRecipeByDietaryRestriction(
+        recipeDiet
+      );
+      if (recipe) {
+        res.status(200).json(recipe);
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getRecipeByReligiousRestriction(req, res) {
+    try {
+      const recipeReligion = req.params.recipeReligious;
+      const recipe = await this.recipeService.getRecipeByReligiousRestriction(
+        recipeReligion
+      );
+      if (recipe) {
+        res.status(200).json(recipe);
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async updateRecipe(req, res) {
+    try {
+      const recipeId = req.params.recipeId;
+      const updatedRecipe = req.body;
+      const result = await this.recipeService.updateRecipe(
+        recipeId,
+        updatedRecipe
+      );
+      if (result.success) {
+        res.status(200).json({ message: "Recipe successfully updated" });
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async deleteRecipe(req, res) {
+    try {
+      const recipeId = req.params.recipeId;
+      const result = await this.recipeService.deleteRecipe(recipeId);
+      if (result.success) {
+        res.status(200).json({ message: "Recipe successfully deleted" });
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+ /* async uploadImage(req, res) {
+    try {
+      const imageId = req.params.imageId;
+      const image = req.file;
+      const result = await this.recipeService.uploadImage(imageId, image);
+      if (result) {
+        res.status(200).json({ message: "Image successfully uploaded" });
+      } else {
+        res.status(404).json({ error: "Image not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }*/
+ 
 }
+
 export const recipeResource = new RecipeResource();

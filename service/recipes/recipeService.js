@@ -1,39 +1,47 @@
-import { recipeStore } from "../../store/recipes/recipeStore";
+import { recipeStore } from "../../store/recipes/recipeStore.js";
 
 class RecipeService {
   constructor() {
     this.recipeStore = recipeStore;
   }
 
-  /*
-  methods:
-
-  async addRecipe(newRecipe){
-    await this.recipeStore.addRecipe(newRecipe);
+  async addRecipe(newRecipe) {
+    return await this.recipeStore.addRecipe(newRecipe);
   }
 
-  async getRecipe(recipeName){
-    await this.recipeStore.getRecipe(recipeName);
+  async getRecipeByName(recipeName) {
+    return await this.recipeStore.getRecipeByName(recipeName);
   }
 
-  async updateRecipe(recipeId, recipeFields){
-    const isUpdated = this.recipeStore.updateRecipe(recipeId, recipeFields);
-    if (isUpdated){
-      return {success: true};
-    } else {
-     return {success: false};
-    }
+  async getRecipeByIngredients(recipeIngredient) {
+    return await this.recipeStore.getRecipeByIngredients(recipeIngredient);
   }
 
-  async deleteRecipe(recipeId){
-    const isDeleted = this.recipeStore.deleteRecipe(recipeId);
-    if (isDeleted){
-      return {success: true}
-    } else {
-     return {success: false}
-    }
+  async getRecipeByCuisineRegion(recipeRegion) {
+    return await this.recipeStore.getRecipeByCuisineRegion(recipeRegion);
   }
-   */
+
+  async getRecipeByProteinChoice(recipeProtein) {
+    return await this.recipeStore.getRecipeByProteinChoice(recipeProtein);
+  }
+
+  async getRecipeByDietaryRestriction(recipeDiet) {
+    return await this.recipeStore.getRecipeByDietaryRestriction(recipeDiet);
+  }
+
+  async getRecipeByReligiousRestriction(recipeReligion) {
+    return await this.recipeStore.getRecipeByReligiousRestriction(recipeReligion);
+  }
+
+  async updateRecipe(recipeId, recipeFields) {
+    const isUpdated = await this.recipeStore.updateRecipe(recipeId, recipeFields);
+    return { success: isUpdated };
+  }
+
+  async deleteRecipe(recipeId) {
+    const isDeleted = await this.recipeStore.deleteRecipe(recipeId);
+    return { success: isDeleted };
+  }
 }
 
 export const recipeService = new RecipeService();

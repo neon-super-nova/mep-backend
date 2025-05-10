@@ -133,7 +133,7 @@ class UserResource {
   async handleGoogleCallback(req, res) {
     try {
       const user = req.user;
-      res.status(200).json({ message: "Oauth login sucess" });
+      res.status(200).json({ message: "Oauth login success" });
     } catch (error) {
       res.status(500).json({ error: "Google OAuth failed" });
     }
