@@ -38,6 +38,7 @@ export const recipeSchema = {
       "Pork",
       "Lamb",
       "Other animal based",
+      "None",
     ],
     required: true,
   },
