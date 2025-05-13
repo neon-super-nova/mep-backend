@@ -46,6 +46,10 @@ class RecipeResource {
     const {
       userId,
       name,
+      prepTime,
+      cookTime,
+      totalTime,
+      servings,
       ingredients,
       instructions,
       imageUrl,
@@ -58,6 +62,10 @@ class RecipeResource {
       const recipe = {
         userId,
         name,
+        prepTime,
+        cookTime,
+        totalTime,
+        servings,
         ingredients,
         instructions,
         imageUrl,

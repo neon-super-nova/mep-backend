@@ -11,22 +11,26 @@ class RecipeStore {
   }
 
   async addRecipe(newRecipe) {
-    const result = await this.collection.insertOne({
-      userId: newRecipe.userId,
-      name: newRecipe.name,
-      prepTime: Number(newRecipe.prepTime),     
-      cookTime: Number(newRecipe.cookTime),      
-      totalTime: Number(newRecipe.totalTime),    
-      servings: Number(newRecipe.servings), 
-      ingredients: newRecipe.ingredients,
-      instructions: newRecipe.instructions,
-      imageUrl: newRecipe.imageUrl,
-      cuisineRegion: newRecipe.cuisineRegion,
-      proteinChoice: newRecipe.proteinChoice,
-      dietaryRestriction: newRecipe.dietaryRestriction,
-      religiousRestriction: newRecipe.religiousRestriction,
-    });
+  function toNumber(val, fallback = 0) {
+    const num = Number(val);
+    return isNaN(num) ? fallback : num;
+  }
 
+  const result = await this.collection.insertOne({
+    userId: newRecipe.userId,
+    name: newRecipe.name,
+    prepTime: toNumber(newRecipe.prepTime),     
+    cookTime: toNumber(newRecipe.cookTime),
+    totalTime: toNumber(newRecipe.totalTime),
+    servings: toNumber(newRecipe.servings),
+    ingredients: newRecipe.ingredients,
+    instructions: newRecipe.instructions,
+    imageUrl: newRecipe.imageUrl,
+    cuisineRegion: newRecipe.cuisineRegion,
+    proteinChoice: newRecipe.proteinChoice,
+    dietaryRestriction: newRecipe.dietaryRestriction,
+    religiousRestriction: newRecipe.religiousRestriction,
+  });
     if (!result.insertedId) {
       throw new Error("Failed to add recipe" + err.message);
     }
