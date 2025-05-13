@@ -14,6 +14,10 @@ class RecipeStore {
     const result = await this.collection.insertOne({
       userId: newRecipe.userId,
       name: newRecipe.name,
+      prepTime: newRecipe.prepTime,
+      cookTime: newRecipe.cookTime,
+      totalTime: newRecipe.totalTime,
+      servings: newRecipe.servings,
       ingredients: newRecipe.ingredients,
       instructions: newRecipe.instructions,
       imageUrl: newRecipe.imageUrl,
