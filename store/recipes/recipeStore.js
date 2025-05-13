@@ -114,4 +114,19 @@ export const recipeStore = new RecipeStore();
 /*  const objectId = ObjectId.createFromHex(recipeId);
     use this objectId to find the recipe and update with the fields specified
     update inputted fields
+
+    also: 
+
+    function formatTime(minutes) {
+      if (minutes < 60) {
+        return { minutes };
+      } else {
+        return {
+          hours: Math.floor(minutes / 60),
+          minutes: minutes % 60
+        };
+      }
+    }
+    
+    might need in front end to format the time
 */
