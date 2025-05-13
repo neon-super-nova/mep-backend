@@ -34,7 +34,7 @@ class RecipeResource {
       "/get-recipe-by-religious-restriction/:recipeReligious",
       this.getRecipeByReligiousRestriction.bind(this)
     );
-    this.router.put("/update-recipe/:recipeId", this.updateRecipe.bind(this));
+    this.router.patch("/update-recipe/:recipeId", this.updateRecipe.bind(this));
     this.router.delete(
       "/delete-recipe/:recipeId",
       this.deleteRecipe.bind(this)
@@ -172,19 +172,52 @@ class RecipeResource {
   async updateRecipe(req, res) {
     try {
       const recipeId = req.params.recipeId;
-      const updatedRecipe = req.body;
+      const patchFields = req.body;
+
+      const allowedFields = [
+        "name",
+        "prepTime",
+        "cookTime",
+        "totalTime",
+        "servings",
+        "ingredients",
+        "instructions",
+        "imageUrl",
+        "cuisineRegion",
+        "proteinChoice",
+        "dietaryRestriction",
+        "religiousRestriction",
+      ];
+      const inputtedFields = {};
+      for (const field of allowedFields) {
+        if (field in patchFields) {
+          inputtedFields[field] = patchFields[field];
+        }
+      }
+
+      if (Object.keys(inputtedFields).length === 0) {
+        return res.status(400).json({ error: "Empty fields" });
+      }
+
       const result = await this.recipeService.updateRecipe(
         recipeId,
-        updatedRecipe
+        inputtedFields
       );
+
+      console.log("Update result:", result);
+
       if (result.success) {
-        res.status(200).json({ message: "Recipe successfully updated" });
+        return res
+          .status(200)
+          .json({ message: "Updates were successfully made" });
       } else {
-        res.status(404).json({ error: "Recipe not found" });
+        return res
+          .status(400)
+          .json({ error: result.message || "Update failed" });
       }
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: "Server error" });
+      return res.status(500).json({ error: "Server error" });
     }
   }
 
@@ -202,8 +235,8 @@ class RecipeResource {
       res.status(500).json({ error: "Server error" });
     }
   }
-
- /* async uploadImage(req, res) {
+}
+/* async uploadImage(req, res) {
     try {
       const imageId = req.params.imageId;
       const image = req.file;
@@ -217,7 +250,5 @@ class RecipeResource {
       res.status(500).json({ error: "Server error" });
     }
   }*/
- 
-}
 
 export const recipeResource = new RecipeResource();
