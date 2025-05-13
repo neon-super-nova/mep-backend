@@ -3,13 +3,12 @@ import { ObjectId } from "mongodb";
 export const recipeCollection = "recipes";
 
 export const recipeSchema = {
-  // no need to assign a userId, mongoDb is already assigning one as { _id }
   userId: ObjectId,
   name: String,
-  prepTime: { type: Number, required: false },
-  cookTime: { type: Number, required: false },
-  totalTime: { type: Number, required: false },
-  servings: { type: Number, required: false },
+  prepTime: Number,     
+  cookTime: Number,    
+  totalTime: Number,    
+  servings: Number,     
   ingredients: [String],
   instructions: [String],
   imageUrl: { type: String, required: false },
