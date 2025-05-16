@@ -1,5 +1,6 @@
 import { recipeStore } from "../../store/recipes/recipeStore.js";
 
+
 class RecipeService {
   constructor() {
     this.recipeStore = recipeStore;
@@ -13,9 +14,11 @@ class RecipeService {
     return await this.recipeStore.getRecipeByName(recipeName);
   }
 
-  async getRecipeByIngredients(recipeIngredient) {
-    return await this.recipeStore.getRecipeByIngredients(recipeIngredient);
-  }
+ async getRecipeByIngredients(regex) {
+  return await this.recipeStore.collection.find({
+    ingredients: { $elemMatch: { $regex: regex } }
+  }).toArray();
+}
 
   async getRecipeByCuisineRegion(recipeRegion) {
     return await this.recipeStore.getRecipeByCuisineRegion(recipeRegion);
@@ -30,11 +33,16 @@ class RecipeService {
   }
 
   async getRecipeByReligiousRestriction(recipeReligion) {
-    return await this.recipeStore.getRecipeByReligiousRestriction(recipeReligion);
+    return await this.recipeStore.getRecipeByReligiousRestriction(
+      recipeReligion
+    );
   }
 
   async updateRecipe(recipeId, recipeFields) {
-    const isUpdated = await this.recipeStore.updateRecipe(recipeId, recipeFields);
+    const isUpdated = await this.recipeStore.updateRecipe(
+      recipeId,
+      recipeFields
+    );
     return { success: isUpdated };
   }
 

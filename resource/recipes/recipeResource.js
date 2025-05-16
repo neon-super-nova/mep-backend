@@ -10,35 +10,29 @@ class RecipeResource {
 
   initRoutes() {
     this.router.post("/add-recipe", this.addRecipe.bind(this));
+    this.router.get("/name/:name", this.getRecipeByName.bind(this));
     this.router.get(
-      "/get-recipe-by-name/:recipeName",
-      this.getRecipeByName.bind(this)
-    );
-    this.router.get(
-      "/get-recipe-by-ingredients/:recipeIngredient",
+      "/ingredient/:ingredients",
       this.getRecipeByIngredients.bind(this)
     );
     this.router.get(
-      "/get-recipe-by-cuisine-region/:recipeRegion",
+      "/region/:cuisineRegion",
       this.getRecipeByCuisineRegion.bind(this)
     );
     this.router.get(
-      "/get-recipe-by-protein-choice/:recipeProtein",
+      "/protein/:proteinChoice",
       this.getRecipeByProteinChoice.bind(this)
     );
     this.router.get(
-      "/get-recipe-by-dietary-restriction/:recipeDietary",
+      "/dietary/:dietaryRestriction",
       this.getRecipeByDietaryRestriction.bind(this)
     );
     this.router.get(
-      "/get-recipe-by-religious-restriction/:recipeReligious",
+      "/religious/:religiousRestriction",
       this.getRecipeByReligiousRestriction.bind(this)
     );
-    this.router.patch("/update-recipe/:recipeId", this.updateRecipe.bind(this));
-    this.router.delete(
-      "/delete-recipe/:recipeId",
-      this.deleteRecipe.bind(this)
-    );
+    this.router.patch("/:recipeId", this.updateRecipe.bind(this));
+    this.router.delete("/:recipeId", this.deleteRecipe.bind(this));
     /*this.router.post("/id/:imageId", this.uploadImage.bind(this));*/
   }
 
@@ -85,7 +79,7 @@ class RecipeResource {
 
   async getRecipeByName(req, res) {
     try {
-      const recipeName = req.params.recipeName;
+      const recipeName = req.params.name;
       const recipe = await this.recipeService.getRecipeByName(recipeName);
       if (recipe) {
         res.status(200).json(recipe);
@@ -93,18 +87,19 @@ class RecipeResource {
         res.status(404).json({ error: "Recipe not found" });
       }
     } catch (error) {
+      console.error(error);
       res.status(500).json({ error: "Server error" });
     }
   }
 
   async getRecipeByIngredients(req, res) {
     try {
-      const recipeIngredient = req.params.recipeIngredient;
-      const recipe = await this.recipeService.getRecipeByIngredients(
-        recipeIngredient
-      );
-      if (recipe) {
-        res.status(200).json(recipe);
+      const ingredient = req.params.ingredients;
+      const regex = new RegExp(ingredient, "i");
+      const recipes = await this.recipeService.getRecipeByIngredients(regex);
+
+      if (recipes && recipes.length > 0) {
+        res.status(200).json(recipes);
       } else {
         res.status(404).json({ error: "Recipe not found" });
       }
@@ -115,7 +110,7 @@ class RecipeResource {
 
   async getRecipeByCuisineRegion(req, res) {
     try {
-      const recipeRegion = req.params.recipeRegion;
+      const recipeRegion = req.params.cuisineRegion;
       const recipe = await this.recipeService.getRecipeByCuisineRegion(
         recipeRegion
       );
@@ -131,7 +126,7 @@ class RecipeResource {
 
   async getRecipeByProteinChoice(req, res) {
     try {
-      const recipeProtein = req.params.recipeProtein;
+      const recipeProtein = req.params.proteinChoice;
       const recipe = await this.recipeService.getRecipeByProteinChoice(
         recipeProtein
       );
@@ -147,7 +142,7 @@ class RecipeResource {
 
   async getRecipeByDietaryRestriction(req, res) {
     try {
-      const recipeDiet = req.params.recipeDietary;
+      const recipeDiet = req.params.dietaryRestriction;
       const recipe = await this.recipeService.getRecipeByDietaryRestriction(
         recipeDiet
       );
@@ -163,7 +158,7 @@ class RecipeResource {
 
   async getRecipeByReligiousRestriction(req, res) {
     try {
-      const recipeReligion = req.params.recipeReligious;
+      const recipeReligion = req.params.religiousRestriction;
       const recipe = await this.recipeService.getRecipeByReligiousRestriction(
         recipeReligion
       );

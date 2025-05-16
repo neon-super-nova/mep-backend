@@ -11,18 +11,14 @@ class RecipeStore {
   }
 
   async addRecipe(newRecipe) {
-  function toNumber(val, fallback = 0) {
-    const num = Number(val);
-    return isNaN(num) ? fallback : num;
-  }
 
   const result = await this.collection.insertOne({
     userId: newRecipe.userId,
     name: newRecipe.name,
-    prepTime: toNumber(newRecipe.prepTime),     
-    cookTime: toNumber(newRecipe.cookTime),
-    totalTime: toNumber(newRecipe.totalTime),
-    servings: toNumber(newRecipe.servings),
+    prepTime: Number(newRecipe.prepTime),     
+    cookTime: Number(newRecipe.cookTime),
+    totalTime: Number(newRecipe.totalTime),
+    servings: Number(newRecipe.servings),
     ingredients: newRecipe.ingredients,
     instructions: newRecipe.instructions,
     imageUrl: newRecipe.imageUrl,
@@ -39,9 +35,6 @@ class RecipeStore {
 
   async getRecipeByName(recipeName) {
     const recipe = await this.collection.findOne({ name: recipeName });
-    if (!recipe) {
-      throw new Error("no results" + err.message);
-    }
     return recipe || null;
   }
 
@@ -49,9 +42,6 @@ class RecipeStore {
     const recipe = await this.collection.findOne({
       ingredients: recipeIngredient,
     });
-    if (!recipe) {
-      throw new Error("no results" + err.message);
-    }
     return recipe || null;
   }
 
@@ -59,9 +49,6 @@ class RecipeStore {
     const recipe = await this.collection.findOne({
       cuisineRegion: recipeRegion,
     });
-    if (!recipe) {
-      throw new Error("no results" + err.message);
-    }
     return recipe || null;
   }
 
@@ -69,9 +56,6 @@ class RecipeStore {
     const recipe = await this.collection.findOne({
       proteinChoice: recipeProtein,
     });
-    if (!recipe) {
-      throw new Error("no results" + err.message);
-    }
     return recipe || null;
   }
 
@@ -79,9 +63,6 @@ class RecipeStore {
     const recipe = await this.collection.findOne({
       dietaryRestriction: recipeDiet,
     });
-    if (!recipe) {
-      throw new Error("no results" + err.message);
-    }
     return recipe || null;
   }
 
@@ -89,26 +70,20 @@ class RecipeStore {
     const recipe = await this.collection.findOne({
       religiousRestriction: recipeReligion,
     });
-    if (!recipe) {
-      throw new Error("no results" + err.message);
-    }
     return recipe || null;
   }
 
   async updateRecipe(recipeId, recipeFields) {
-    const objectId = ObjectId.createFromHex(recipeId);
+    const objectId = new ObjectId(recipeId);
     const result = await this.collection.updateOne(
       { _id: objectId },
       { $set: recipeFields }
     );
-    if (!recipeId) {
-      throw new Error("Failed to update recipe: " + err.message);
-    }
     return result.modifiedCount > 0;
   }
 
   async deleteRecipe(recipeId) {
-    const objectId = ObjectId.createFromHex(recipeId);
+    const objectId = new ObjectId(recipeId);
     const result = await this.collection.deleteOne({ _id: objectId });
     if (!recipeId) {
       return "no results";
