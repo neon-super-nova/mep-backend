@@ -9,26 +9,23 @@ class RecipeResource {
   }
 
   initRoutes() {
-    this.router.post("/add-recipe", this.addRecipe.bind(this));
-    this.router.get("/name/:name", this.getRecipeByName.bind(this));
+    this.router.post("/", this.addRecipe.bind(this));
+    this.router.get("/:name", this.getRecipeByName.bind(this));
+    this.router.get("/:ingredients", this.getRecipeByIngredients.bind(this));
     this.router.get(
-      "/ingredient/:ingredients",
-      this.getRecipeByIngredients.bind(this)
-    );
-    this.router.get(
-      "/region/:cuisineRegion",
+      "/:cuisineRegion",
       this.getRecipeByCuisineRegion.bind(this)
     );
     this.router.get(
-      "/protein/:proteinChoice",
+      "/:proteinChoice",
       this.getRecipeByProteinChoice.bind(this)
     );
     this.router.get(
-      "/dietary/:dietaryRestriction",
+      "/:dietaryRestriction",
       this.getRecipeByDietaryRestriction.bind(this)
     );
     this.router.get(
-      "/religious/:religiousRestriction",
+      "/:religiousRestriction",
       this.getRecipeByReligiousRestriction.bind(this)
     );
     this.router.patch("/:recipeId", this.updateRecipe.bind(this));
