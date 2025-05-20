@@ -81,23 +81,36 @@ class RecipeStore {
   }
 
   async updateRecipe(recipeId, userId, recipeFields) {
-    const objectId = new ObjectId(String(recipeId));
+    if (!ObjectId.isValid(recipeId)) {
+      throw new Error("Invalid recipeId");
+    }
+
+    const objectId = new ObjectId(recipeId);
+
     const result = await this.collection.updateOne(
-      { _id: objectId, userId: new ObjectId(String(userId)) },
+      { _id: objectId, userId: userId }, // userId as string
       { $set: recipeFields }
     );
+
+    if (result.matchedCount === 0) {
+      throw new Error("No matching recipe found or nothing was updated.");
+    }
+
     return result.modifiedCount > 0;
   }
 
   async deleteRecipe(recipeId, userId) {
-    const objectId = new ObjectId(String(recipeId));
-    const result = await this.collection.deleteOne({
-      _id: objectId,
-      userId: new ObjectId(String(userId)),
-    });
-    if (!recipeId) {
-      return "no results";
+    if (!ObjectId.isValid(recipeId)) {
+      throw new Error("Invalid recipeId");
     }
+
+    const objectId = new ObjectId(recipeId);
+
+    const result = await this.collection.deleteOne({
+      _id: new ObjectId(recipeId),
+      userId: userId,
+    });
+
     return result.deletedCount > 0;
   }
 }

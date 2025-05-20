@@ -191,7 +191,7 @@ class RecipeResource {
   async updateRecipe(req, res) {
     try {
       const recipeId = req.params.recipeId;
-      const userId = req.user?.userId;
+      const userId = req.user?.userId; // This should be a string
 
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
@@ -213,6 +213,7 @@ class RecipeResource {
         "dietaryRestriction",
         "religiousRestriction",
       ];
+
       const inputtedFields = {};
 
       for (const field of allowedFields) {
@@ -227,10 +228,9 @@ class RecipeResource {
 
       const result = await this.recipeService.updateRecipe(
         recipeId,
+        userId, // Pass userId string here
         inputtedFields
       );
-
-      console.log("Update result:", result);
 
       if (result.success) {
         return res
@@ -251,20 +251,21 @@ class RecipeResource {
     try {
       const recipeId = req.params.recipeId;
       const userId = req.user?.userId;
+
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const result = await this.recipeService.deleteRecipe(recipeId);
+      const result = await this.recipeService.deleteRecipe(recipeId, userId);
 
       if (result.success) {
-        res.status(200).json({ message: "Recipe successfully deleted" });
+        return res.status(200).json({ message: "Recipe successfully deleted" });
       } else {
-        res.status(404).json({ error: "Recipe not found" });
+        return res.status(404).json({ error: result.message });
       }
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: "Server error" });
+      return res.status(500).json({ error: "Server error" });
     }
   }
 }

@@ -44,17 +44,27 @@ class RecipeService {
   }
 
   async updateRecipe(recipeId, userId, recipeFields) {
-    const isUpdated = await this.recipeStore.updateRecipe(
-      recipeId,
-      userId,
-      recipeFields
-    );
-    return { success: isUpdated };
+    try {
+      const isUpdated = await this.recipeStore.updateRecipe(
+        recipeId,
+        userId,
+        recipeFields
+      );
+      return { success: isUpdated };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
   }
 
   async deleteRecipe(recipeId, userId) {
     const isDeleted = await this.recipeStore.deleteRecipe(recipeId, userId);
-    return { success: isDeleted };
+    if (!isDeleted) {
+      return {
+        success: false,
+        message: "No matching recipe found or delete failed.",
+      };
+    }
+    return { success: true };
   }
 }
 
