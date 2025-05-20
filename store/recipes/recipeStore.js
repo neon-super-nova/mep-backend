@@ -1,6 +1,7 @@
 import { recipeCollection } from "./recipeSchema.js";
 import { getDatabase } from "../database.js";
 import { ObjectId } from "mongodb";
+
 class RecipeStore {
   constructor() {
     this.collection = null;
@@ -11,26 +12,32 @@ class RecipeStore {
   }
 
   async addRecipe(newRecipe) {
+    const result = await this.collection.insertOne({
+      userId: newRecipe.userId,
+      name: newRecipe.name,
+      prepTime: Number(newRecipe.prepTime),
+      cookTime: Number(newRecipe.cookTime),
+      totalTime: Number(newRecipe.totalTime),
+      servings: Number(newRecipe.servings),
+      ingredients: newRecipe.ingredients,
+      instructions: newRecipe.instructions,
+      imageUrl: newRecipe.imageUrl,
+      cuisineRegion: newRecipe.cuisineRegion,
+      proteinChoice: newRecipe.proteinChoice,
+      dietaryRestriction: newRecipe.dietaryRestriction,
+      religiousRestriction: newRecipe.religiousRestriction,
+    });
 
-  const result = await this.collection.insertOne({
-    userId: newRecipe.userId,
-    name: newRecipe.name,
-    prepTime: Number(newRecipe.prepTime),     
-    cookTime: Number(newRecipe.cookTime),
-    totalTime: Number(newRecipe.totalTime),
-    servings: Number(newRecipe.servings),
-    ingredients: newRecipe.ingredients,
-    instructions: newRecipe.instructions,
-    imageUrl: newRecipe.imageUrl,
-    cuisineRegion: newRecipe.cuisineRegion,
-    proteinChoice: newRecipe.proteinChoice,
-    dietaryRestriction: newRecipe.dietaryRestriction,
-    religiousRestriction: newRecipe.religiousRestriction,
-  });
     if (!result.insertedId) {
       throw new Error("Failed to add recipe" + err.message);
     }
     return result.insertedId;
+  }
+
+  async getRecipesByUser(userId) {
+    return await this.collection
+      .find({ userId: new ObjectId(String(userId)) })
+      .toArray();
   }
 
   async getRecipeByName(recipeName) {
@@ -73,18 +80,21 @@ class RecipeStore {
     return recipe || null;
   }
 
-  async updateRecipe(recipeId, recipeFields) {
-    const objectId = new ObjectId(recipeId);
+  async updateRecipe(recipeId, userId, recipeFields) {
+    const objectId = new ObjectId(String(recipeId));
     const result = await this.collection.updateOne(
-      { _id: objectId },
+      { _id: objectId, userId: new ObjectId(String(userId)) },
       { $set: recipeFields }
     );
     return result.modifiedCount > 0;
   }
 
-  async deleteRecipe(recipeId) {
-    const objectId = new ObjectId(recipeId);
-    const result = await this.collection.deleteOne({ _id: objectId });
+  async deleteRecipe(recipeId, userId) {
+    const objectId = new ObjectId(String(recipeId));
+    const result = await this.collection.deleteOne({
+      _id: objectId,
+      userId: new ObjectId(String(userId)),
+    });
     if (!recipeId) {
       return "no results";
     }

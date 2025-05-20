@@ -11,17 +11,24 @@ class UserService {
 
   async addNewUser(userData) {
     try {
+      // Generate verification token with just username
       const verificationToken = generateToken(
         { username: userData.username },
         "1d"
       );
-      // add verificationToken to userData to send to store
+
+      // Add verification token to userData
       const newUserDataWithToken = {
         ...userData,
         verificationToken,
       };
-      await this.userStore.addNewUser(newUserDataWithToken);
+
+      // Save new user to DB
+      await userStore.addNewUser(newUserDataWithToken);
+
+      // Send verification email
       await sendVerificationEmail(userData.email, verificationToken);
+
       return { success: true };
     } catch (err) {
       return { success: false, message: err.message };
@@ -31,7 +38,12 @@ class UserService {
   async isAuthenticated(user) {
     const authenticationStatus = await this.userStore.isAuthenticated(user);
     if (authenticationStatus === "SUCCESS") {
-      const token = generateToken({ username: user.username });
+      const fullUserData = await this.userStore.findByUsername(user.username);
+      const tokenPayload = {
+        userId: fullUserData._id.toString(), // make sure it's a string
+        username: fullUserData.username,
+      };
+      const token = generateToken(tokenPayload);
       return { success: true, token };
     } else if (authenticationStatus === "CREDENTIAL_MISMATCH") {
       return { success: false, message: "Password mismatch" };

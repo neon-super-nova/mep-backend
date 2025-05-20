@@ -8,9 +8,5 @@ export function generateToken(payload, expiresIn = EXPIRATION) {
 }
 
 export function verifyToken(token) {
-  try {
-    return jwt.verify(token, JWT_SECRET);
-  } catch (error) {
-    return null;
-  }
+  return jwt.verify(token, JWT_SECRET);
 }

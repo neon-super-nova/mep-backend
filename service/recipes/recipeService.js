@@ -1,6 +1,5 @@
 import { recipeStore } from "../../store/recipes/recipeStore.js";
 
-
 class RecipeService {
   constructor() {
     this.recipeStore = recipeStore;
@@ -14,11 +13,13 @@ class RecipeService {
     return await this.recipeStore.getRecipeByName(recipeName);
   }
 
- async getRecipeByIngredients(regex) {
-  return await this.recipeStore.collection.find({
-    ingredients: { $elemMatch: { $regex: regex } }
-  }).toArray();
-}
+  async getRecipeByIngredients(regex) {
+    return await this.recipeStore.collection
+      .find({
+        ingredients: { $elemMatch: { $regex: regex } },
+      })
+      .toArray();
+  }
 
   async getRecipeByCuisineRegion(recipeRegion) {
     return await this.recipeStore.getRecipeByCuisineRegion(recipeRegion);
@@ -38,16 +39,21 @@ class RecipeService {
     );
   }
 
-  async updateRecipe(recipeId, recipeFields) {
+  async getRecipesByUser(userId) {
+    return await this.recipeStore.getRecipesByUser(userId);
+  }
+
+  async updateRecipe(recipeId, userId, recipeFields) {
     const isUpdated = await this.recipeStore.updateRecipe(
       recipeId,
+      userId,
       recipeFields
     );
     return { success: isUpdated };
   }
 
-  async deleteRecipe(recipeId) {
-    const isDeleted = await this.recipeStore.deleteRecipe(recipeId);
+  async deleteRecipe(recipeId, userId) {
+    const isDeleted = await this.recipeStore.deleteRecipe(recipeId, userId);
     return { success: isDeleted };
   }
 }

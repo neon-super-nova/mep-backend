@@ -1,12 +1,12 @@
 import express from "express";
 import { userService } from "../../service/users/userService.js";
-import { forgotPasswordService } from "../../service/forgotPassword/forgotPasswordService.js";
 
 class UserResource {
   constructor() {
     this.router = express.Router();
     this.initRoutes();
   }
+
   initRoutes() {
     this.router.post("/register", this.register.bind(this));
     this.router.get("/verify-email/:token", this.verifyEmail.bind(this));
@@ -44,12 +44,14 @@ class UserResource {
       const result = await userService.addNewUser(req.body);
 
       if (result.success) {
-        res.status(200).json({ message: "User successfully registered" });
+        return res
+          .status(200)
+          .json({ message: "User successfully registered" });
       } else {
-        res.status(401).json({ error: result.message });
+        return res.status(401).json({ error: result.message });
       }
     } catch (error) {
-      res.status(500).json({ error: "Server error" });
+      return res.status(500).json({ error: "Server error" });
     }
   }
 
@@ -58,12 +60,12 @@ class UserResource {
       const { token } = req.params;
       const result = await userService.verifyEmail(token);
       if (result.success) {
-        res.status(200).send("Email successfully verified!");
+        return res.status(200).send("Email successfully verified!");
       } else {
-        res.status(400).send("Invalid or expired verification link.");
+        return res.status(400).send("Invalid or expired verification link.");
       }
     } catch (error) {
-      res.status(500).send("Server error");
+      return res.status(500).send("Server error");
     }
   }
 
@@ -84,30 +86,28 @@ class UserResource {
       const result = await userService.isAuthenticated(userData);
 
       if (result.success) {
-        res
+        return res
           .status(200)
           .json({ message: "Login successful", token: result.token });
       } else {
-        res.status(401).json({ error: result.message });
+        return res.status(401).json({ error: result.message });
       }
     } catch (error) {
-      res.status(500).json({ error: "Server error" });
+      return res.status(500).json({ error: "Server error" });
     }
   }
 
   async forgotPassword(req, res) {
     try {
-      console.log(req.body);
       const { email } = req.body;
       const result = await forgotPasswordService.requestPasswordReset(email);
       if (result === "User found. Email sent") {
-        res.status(200).json({ message: "Password reset email sent" });
+        return res.status(200).json({ message: "Password reset email sent" });
       } else {
-        res.status(404).json({ error: "Email not found" });
+        return res.status(404).json({ error: "Email not found" });
       }
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Server error" });
+      return res.status(500).json({ error: "Server error" });
     }
   }
 
@@ -121,21 +121,24 @@ class UserResource {
       );
 
       if (result.success) {
-        res.status(200).json({ message: "Password was successfully changed" });
+        return res
+          .status(200)
+          .json({ message: "Password was successfully changed" });
       } else {
-        res.status(400).json({ error: "Invalid or expired token" });
+        return res.status(400).json({ error: "Invalid or expired token" });
       }
     } catch (error) {
-      res.status(500).json({ error: "Server error" });
+      return res.status(500).json({ error: "Server error" });
     }
   }
 
   async handleGoogleCallback(req, res) {
     try {
+      // Assuming req.user is set by some OAuth middleware
       const user = req.user;
-      res.status(200).json({ message: "Oauth login success" });
+      return res.status(200).json({ message: "Oauth login success" });
     } catch (error) {
-      res.status(500).json({ error: "Google OAuth failed" });
+      return res.status(500).json({ error: "Google OAuth failed" });
     }
   }
 
@@ -158,7 +161,6 @@ class UserResource {
 
     try {
       const result = await userService.patchUser(userId, inputtedFields);
-      console.log("Update result:", result);
       if (result.success) {
         return res
           .status(200)
@@ -169,13 +171,12 @@ class UserResource {
           .json({ error: result.message || "Update failed" });
       }
     } catch (error) {
-      console.error(error);
       return res.status(500).json({ error: "Server error" });
     }
   }
 
   async logout(req, res) {
-    res.status(200).json({ message: "logout successfully" });
+    return res.status(200).json({ message: "logout successfully" });
   }
 }
 

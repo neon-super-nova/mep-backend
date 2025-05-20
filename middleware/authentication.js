@@ -1,18 +1,24 @@
-import { verifyToken } from "../config/jwt";
+import { verifyToken } from "../config/serverSessions/jwt.js";
 
 export function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
-  const token = authHeader?.split(" ")[1];
+  if (!authHeader)
+    return res.status(401).json({ error: "Unauthorized: No token" });
 
-  if (!token) {
-    return res.sendStatus(401);
+  const token = authHeader.split(" ")[1];
+  if (!token)
+    return res.status(401).json({ error: "Unauthorized: Malformed token" });
+
+  try {
+    const decoded = verifyToken(token); // use your verify function
+
+    req.user = {
+      userId: decoded.userId, // assuming your token has userId
+      username: decoded.username, // and username
+    };
+
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: "Unauthorized: Invalid token" });
   }
-
-  const user = verifyToken(token);
-  if (!user) {
-    return res.sendStatus(403);
-  }
-
-  req.user = user;
-  next();
 }

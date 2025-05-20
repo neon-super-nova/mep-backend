@@ -1,5 +1,6 @@
 import express from "express";
 import { recipeService } from "../../service/recipes/recipeService.js";
+import { authenticateToken } from "../../middleware/authentication.js";
 
 class RecipeResource {
   constructor() {
@@ -9,33 +10,45 @@ class RecipeResource {
   }
 
   initRoutes() {
-    this.router.post("/", this.addRecipe.bind(this));
-    this.router.get("/:name", this.getRecipeByName.bind(this));
-    this.router.get("/:ingredients", this.getRecipeByIngredients.bind(this));
+    this.router.post("/", authenticateToken, this.addRecipe.bind(this));
+    this.router.patch(
+      "/:recipeId",
+      authenticateToken,
+      this.updateRecipe.bind(this)
+    );
+    this.router.delete(
+      "/:recipeId",
+      authenticateToken,
+      this.deleteRecipe.bind(this)
+    );
+
+    this.router.get("/name/:name", this.getRecipeByName.bind(this));
     this.router.get(
-      "/:cuisineRegion",
+      "/ingredients/:ingredients",
+      this.getRecipeByIngredients.bind(this)
+    );
+    this.router.get(
+      "/cuisine/:cuisineRegion",
       this.getRecipeByCuisineRegion.bind(this)
     );
     this.router.get(
-      "/:proteinChoice",
+      "/proteinChoice/:proteinChoice",
       this.getRecipeByProteinChoice.bind(this)
     );
     this.router.get(
-      "/:dietaryRestriction",
+      "/dietaryRestriction/:dietaryRestriction",
       this.getRecipeByDietaryRestriction.bind(this)
     );
     this.router.get(
-      "/:religiousRestriction",
+      "/religiousRestriction/:religiousRestriction",
       this.getRecipeByReligiousRestriction.bind(this)
     );
-    this.router.patch("/:recipeId", this.updateRecipe.bind(this));
-    this.router.delete("/:recipeId", this.deleteRecipe.bind(this));
+
     /*this.router.post("/id/:imageId", this.uploadImage.bind(this));*/
   }
 
   async addRecipe(req, res) {
     const {
-      userId,
       name,
       prepTime,
       cookTime,
@@ -49,6 +62,12 @@ class RecipeResource {
       dietaryRestriction,
       religiousRestriction,
     } = req.body;
+
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
     try {
       const recipe = {
         userId,
@@ -172,6 +191,12 @@ class RecipeResource {
   async updateRecipe(req, res) {
     try {
       const recipeId = req.params.recipeId;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
       const patchFields = req.body;
 
       const allowedFields = [
@@ -189,6 +214,7 @@ class RecipeResource {
         "religiousRestriction",
       ];
       const inputtedFields = {};
+
       for (const field of allowedFields) {
         if (field in patchFields) {
           inputtedFields[field] = patchFields[field];
@@ -224,7 +250,13 @@ class RecipeResource {
   async deleteRecipe(req, res) {
     try {
       const recipeId = req.params.recipeId;
+      const userId = req.user?.userId;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
       const result = await this.recipeService.deleteRecipe(recipeId);
+
       if (result.success) {
         res.status(200).json({ message: "Recipe successfully deleted" });
       } else {

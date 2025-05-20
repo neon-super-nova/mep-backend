@@ -26,42 +26,27 @@ class UserStore {
   }
 
   async addNewUser(newUser) {
-    const existingUserCheck = await this.collection.findOne({
+    const existingUser = await this.collection.findOne({
       $or: [{ username: newUser.username }, { email: newUser.email }],
     });
-    if (existingUserCheck) {
+
+    if (existingUser) {
       throw new Error("User already registered");
     }
-    const newUserData = {
+
+    const hashedPassword = await bcrypt.hash(newUser.password, 10);
+
+    const userData = {
       username: newUser.username,
       email: newUser.email,
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
+      password: hashedPassword,
       verified: false,
       verificationToken: newUser.verificationToken,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
     };
 
-    if (newUser.password) {
-      newUserData.password = await bcrypt.hash(newUser.password, 10);
-    }
-
-    if (newUser.facebookToken) {
-      newUserData.facebookToken = newUser.facebookToken;
-    }
-
-    if (newUser.googleToken) {
-      newUserData.googleToken = newUser.googleToken;
-    }
-
-    if (newUser.appleToken) {
-      newUserData.appleToken = newUser.appleToken;
-    }
-
-    if (newUser.oauthProvider) {
-      newUserData.oauthProvider = newUser.oauthProvider;
-    }
-
-    await this.collection.insertOne(newUserData);
+    await this.collection.insertOne(userData);
   }
 
   async isAuthenticated(user) {
@@ -94,6 +79,10 @@ class UserStore {
     }
 
     return "CREDENTIALS_MISMATCH";
+  }
+
+  async findByUsername(username) {
+    return this.collection.findOne({ username });
   }
 
   async verifyEmail(token) {
