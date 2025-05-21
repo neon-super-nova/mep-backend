@@ -1,4 +1,3 @@
-import passport from "passport";
 import { getDatabase } from "../database.js";
 import bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
@@ -11,18 +10,12 @@ class UserStore {
   async init() {
     const db = getDatabase();
     this.collection = db.collection("users");
-    console.log("Collection initialized successfully");
+    console.log("User collection initialized");
   }
 
   async userExistsByEmail(email) {
-    const check = await this.collection.findOne({
-      email: email,
-    });
-    if (check) {
-      return true;
-    } else {
-      return false;
-    }
+    const user = await this.collection.findOne({ email });
+    return !!user;
   }
 
   async addNewUser(newUser) {
@@ -42,8 +35,8 @@ class UserStore {
       password: hashedPassword,
       verified: false,
       verificationToken: newUser.verificationToken,
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
+      firstName: newUser.firstName || "",
+      lastName: newUser.lastName || "",
     };
 
     await this.collection.insertOne(userData);
@@ -66,8 +59,8 @@ class UserStore {
     }
 
     if (user.oauthProvider) {
-      const oauthTokenField = `${user.oauthProvider}Token`; // e.g., "facebookToken"
-
+      // OAuth token check
+      const oauthTokenField = `${user.oauthProvider}Token`; // e.g. googleToken
       if (
         foundUser[oauthTokenField] &&
         foundUser[oauthTokenField] === user.oauthToken
@@ -82,7 +75,11 @@ class UserStore {
   }
 
   async findByUsername(username) {
-    return this.collection.findOne({ username });
+    return await this.collection.findOne({ username });
+  }
+
+  async findByEmail(email) {
+    return await this.collection.findOne({ email });
   }
 
   async verifyEmail(token) {
@@ -100,10 +97,12 @@ class UserStore {
   async updatePassword(email, newPassword) {
     const trimmedEmail = email.trim();
     const trimmedPassword = newPassword.trim();
+
     const userExists = await this.userExistsByEmail(trimmedEmail);
     if (!userExists) {
       return "User not found";
     }
+
     const newHashedPassword = await bcrypt.hash(trimmedPassword, 10);
     await this.collection.updateOne(
       { email: trimmedEmail },
@@ -118,8 +117,26 @@ class UserStore {
       { _id: objectId },
       { $set: patchFields }
     );
-    // true if 1 (only possible number of updates) was modified
     return result.modifiedCount > 0;
+  }
+
+  // Google OAuth helpers
+  async findGoogleUser(email) {
+    return await this.collection.findOne({ email });
+  }
+
+  async registerGoogleUser(profile) {
+    const newUser = {
+      username: profile.email,
+      email: profile.email,
+      firstName: profile.name?.split(" ")[0] || "",
+      lastName: profile.name?.split(" ")[1] || "",
+      googleToken: profile.accessToken, // store this token
+      oauthProvider: "google",
+      verified: true,
+    };
+    const insertResult = await this.collection.insertOne(newUser);
+    return { ...newUser, _id: insertResult.insertedId };
   }
 }
 

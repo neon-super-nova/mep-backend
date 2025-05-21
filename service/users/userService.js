@@ -11,22 +11,18 @@ class UserService {
 
   async addNewUser(userData) {
     try {
-      // Generate verification token with just username
       const verificationToken = generateToken(
         { username: userData.username },
         "1d"
       );
 
-      // Add verification token to userData
       const newUserDataWithToken = {
         ...userData,
         verificationToken,
       };
 
-      // Save new user to DB
-      await userStore.addNewUser(newUserDataWithToken);
+      await this.userStore.addNewUser(newUserDataWithToken);
 
-      // Send verification email
       await sendVerificationEmail(userData.email, verificationToken);
 
       return { success: true };
@@ -37,10 +33,11 @@ class UserService {
 
   async isAuthenticated(user) {
     const authenticationStatus = await this.userStore.isAuthenticated(user);
+
     if (authenticationStatus === "SUCCESS") {
       const fullUserData = await this.userStore.findByUsername(user.username);
       const tokenPayload = {
-        userId: fullUserData._id.toString(), // make sure it's a string
+        userId: fullUserData._id.toString(),
         username: fullUserData.username,
       };
       const token = generateToken(tokenPayload);
@@ -66,20 +63,71 @@ class UserService {
       token
     );
     if (!verifyToken) {
-      return "Invalid token";
+      return { success: false, message: "Invalid token" };
     }
     await this.userStore.updatePassword(email, newPassword);
     await this.forgotPasswordStore.markTokenUsed(token);
     return { success: true };
   }
 
-  async patchUser(userId, pathFields) {
-    const update = await this.userStore.patchUser(userId, pathFields);
+  async patchUser(userId, patchFields) {
+    const update = await this.userStore.patchUser(userId, patchFields);
     if (update) {
       return { success: true };
     } else {
       return { success: false, message: "No changes made or user not found" };
     }
+  }
+
+  // Google OAuth
+  async loginWithGoogle(profile) {
+    const user = await this.userStore.findGoogleUser(profile.email);
+
+    if (!user) {
+      return { success: false, message: "User not found, please register" };
+    }
+
+    if (
+      user.googleToken !== profile.accessToken ||
+      user.googleRefreshToken !== profile.refreshToken
+    ) {
+      await this.userStore.patchUser(user._id.toString(), {
+        googleToken: profile.accessToken,
+        googleRefreshToken: profile.refreshToken,
+      });
+    }
+
+    const tokenPayload = {
+      userId: user._id.toString(),
+      username: user.username || user.email,
+    };
+    const token = generateToken(tokenPayload);
+
+    return { success: true, token, user };
+  }
+
+  async registerWithGoogle(profile) {
+    const existingUser = await this.userStore.findGoogleUser(profile.email);
+    if (existingUser) {
+      return { success: false, message: "User already exists" };
+    }
+
+    const newUser = await this.userStore.registerGoogleUser({
+      email: profile.email,
+      name: `${profile.firstName} ${profile.lastName}`.trim(),
+      googleToken: profile.accessToken,
+      googleRefreshToken: profile.refreshToken,
+      oauthProvider: "google",
+      verified: true,
+    });
+
+    const tokenPayload = {
+      userId: newUser._id.toString(),
+      username: newUser.username || newUser.email,
+    };
+    const token = generateToken(tokenPayload);
+
+    return { success: true, token, user: newUser };
   }
 }
 

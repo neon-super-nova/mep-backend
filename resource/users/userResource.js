@@ -1,5 +1,8 @@
 import express from "express";
+import passport from "passport";
 import { userService } from "../../service/users/userService.js";
+import { forgotPasswordService } from "../../service/forgotPassword/forgotPasswordService.js";
+import { generateToken } from "../../config/serverSessions/jwt.js"; // Make sure path is correct
 
 class UserResource {
   constructor() {
@@ -11,46 +14,46 @@ class UserResource {
     this.router.post("/register", this.register.bind(this));
     this.router.get("/verify-email/:token", this.verifyEmail.bind(this));
     this.router.post("/login", this.login.bind(this));
-    this.router.get(
-      "/auth/google/callback",
-      this.handleGoogleCallback.bind(this)
-    );
     this.router.patch("/:userId", this.updateUser.bind(this));
     this.router.post("/logout", this.logout.bind(this));
     this.router.post("/forgot-password", this.forgotPassword.bind(this));
     this.router.post("/reset-password", this.resetPassword.bind(this));
+
+    // Google OAuth routes using Passport
+    this.router.get(
+      "/auth/google",
+      passport.authenticate("google", {
+        scope: ["email", "profile"],
+        session: false,
+      })
+    );
+
+    this.router.get(
+      "/auth/google/callback",
+      passport.authenticate("google", { session: false }),
+      this.googleOAuthCallback.bind(this)
+    );
   }
 
   async register(req, res) {
-    const {
-      username,
-      password,
-      email,
-      firstName,
-      lastName,
-      oauthProvider,
-      oauthToken,
-    } = req.body;
+    const { username, password, email, firstName, lastName } = req.body;
     try {
-      const userData = { username, email, firstName, lastName };
-      if (password) {
-        userData.password = password;
-      } else if (oauthProvider && oauthToken) {
-        userData.oauthProvider = oauthProvider;
-        userData[`${oauthProvider}Token`] = oauthToken;
-      } else {
-        return res.status(400).json({ error: "Missing credentials" });
+      if (!password) {
+        return res.status(400).json({ error: "Password is required" });
       }
-      const result = await userService.addNewUser(req.body);
+
+      const userData = { username, email, firstName, lastName, password };
+      const result = await userService.addNewUser(userData);
 
       if (result.success) {
         return res
           .status(200)
           .json({ message: "User successfully registered" });
       } else {
-        return res.status(401).json({ error: result.message });
+        return res.status(400).json({ error: result.message });
       }
     } catch (error) {
+      console.error("Register error:", error);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -65,25 +68,19 @@ class UserResource {
         return res.status(400).send("Invalid or expired verification link.");
       }
     } catch (error) {
+      console.error("Verify email error:", error);
       return res.status(500).send("Server error");
     }
   }
 
   async login(req, res) {
-    const { username, password, oauthProvider, oauthToken } = req.body;
+    const { username, password } = req.body;
     try {
-      const userData = { username };
-
-      if (password) {
-        userData.password = password;
-      } else if (oauthProvider && oauthToken) {
-        userData.oauthProvider = oauthProvider;
-        userData.oauthToken = oauthToken;
-      } else {
-        return res.status(400).json({ error: "Missing credentials" });
+      if (!password) {
+        return res.status(400).json({ error: "Password is required" });
       }
 
-      const result = await userService.isAuthenticated(userData);
+      const result = await userService.isAuthenticated({ username, password });
 
       if (result.success) {
         return res
@@ -93,6 +90,7 @@ class UserResource {
         return res.status(401).json({ error: result.message });
       }
     } catch (error) {
+      console.error("Login error:", error);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -107,6 +105,7 @@ class UserResource {
         return res.status(404).json({ error: "Email not found" });
       }
     } catch (error) {
+      console.error("Forgot password error:", error);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -128,17 +127,8 @@ class UserResource {
         return res.status(400).json({ error: "Invalid or expired token" });
       }
     } catch (error) {
+      console.error("Reset password error:", error);
       return res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async handleGoogleCallback(req, res) {
-    try {
-      // Assuming req.user is set by some OAuth middleware
-      const user = req.user;
-      return res.status(200).json({ message: "Oauth login success" });
-    } catch (error) {
-      return res.status(500).json({ error: "Google OAuth failed" });
     }
   }
 
@@ -171,12 +161,35 @@ class UserResource {
           .json({ error: result.message || "Update failed" });
       }
     } catch (error) {
+      console.error("Update user error:", error);
       return res.status(500).json({ error: "Server error" });
     }
   }
 
   async logout(req, res) {
-    return res.status(200).json({ message: "logout successfully" });
+    // You can add logic here if you use sessions, JWT blacklist, etc.
+    return res.status(200).json({ message: "Logout successful" });
+  }
+
+  // Google OAuth callback handler
+  async googleOAuthCallback(req, res) {
+    try {
+      const user = req.user;
+      if (!user) {
+        return res.status(401).json({ error: "Authentication failed" });
+      }
+
+      const token = generateToken({
+        userId: user._id.toString(),
+        username: user.username || user.email,
+        email: user.email,
+      });
+
+      return res.redirect(`${process.env.URL_REDIRECT}?token=${token}`);
+    } catch (error) {
+      console.error("Google OAuth callback error:", error);
+      return res.status(500).json({ error: "OAuth callback error" });
+    }
   }
 }
 

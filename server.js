@@ -1,13 +1,15 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import passport from "passport";
+import helmet from "helmet";
 import { connectDatabase } from "./store/database.js";
 import { userStore } from "./store/users/userStore.js";
 import { forgotPasswordStore } from "./store/forgotPassword/forgotPasswordStore.js";
 import { userResource } from "./resource/users/userResource.js";
 import { recipeStore } from "./store/recipes/recipeStore.js";
 import { recipeResource } from "./resource/recipes/recipeResource.js";
-
+import { configureGooglePassport } from "./config/oauth/oauth.js";
 
 dotenv.config();
 
@@ -22,15 +24,19 @@ app.use(
     credentials: true,
   })
 );
+configureGooglePassport();
+app.use(passport.initialize());
+
+app.use(helmet());
 
 connectDatabase()
   .then(async () => {
     await userStore.init();
     await forgotPasswordStore.init();
     await recipeStore.init();
+
     app.use("/api/users", userResource.router);
     app.use("/api/recipes", recipeResource.router);
-
 
     app.get("/", (req, res) => {
       res.send("Server is working");

@@ -1,5 +1,7 @@
 import passport from "passport";
-import { OAuth2Strategy as GoogleStrategy } from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { userStore } from "../../store/users/userStore.js";
+import { ObjectId } from "mongodb";
 
 export function configureGooglePassport() {
   passport.use(
@@ -10,15 +12,45 @@ export function configureGooglePassport() {
         callbackURL: process.env.GOOGLE_CALLBACK_URL,
       },
       async (accessToken, refreshToken, profile, done) => {
-        const user = {
-          googleId: profile.id,
-          email: profile.emails[0].value,
-          name: profile.displayName,
-          image: profile.photos?.[0]?.value,
-          accessToken,
-        };
-        return done(null, user);
+        try {
+          const email = profile.emails[0].value;
+          let user = await userStore.findGoogleUser(email);
+
+          if (!user) {
+            user = await userStore.registerGoogleUser({
+              email,
+              name: profile.displayName,
+              googleToken: accessToken,
+              googleRefreshToken: refreshToken,
+            });
+          } else {
+            if (user.googleToken !== accessToken) {
+              await userStore.patchUser(user._id.toString(), {
+                googleToken: accessToken,
+                googleRefreshToken: refreshToken,
+              });
+            }
+          }
+          return done(null, user);
+        } catch (err) {
+          return done(err, null);
+        }
       }
     )
   );
+
+  passport.serializeUser((user, done) => {
+    done(null, user._id.toString());
+  });
+
+  passport.deserializeUser(async (id, done) => {
+    try {
+      const user = await userStore.collection.findOne({
+        _id: new ObjectId(id),
+      });
+      done(null, user);
+    } catch (err) {
+      done(err, null);
+    }
+  });
 }
