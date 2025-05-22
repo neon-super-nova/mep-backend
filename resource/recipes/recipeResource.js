@@ -22,6 +22,7 @@ class RecipeResource {
       this.deleteRecipe.bind(this)
     );
 
+    // all GETs for search filtering
     this.router.get("/name/:name", this.getRecipeByName.bind(this));
     this.router.get(
       "/ingredients/:ingredients",
@@ -32,15 +33,15 @@ class RecipeResource {
       this.getRecipeByCuisineRegion.bind(this)
     );
     this.router.get(
-      "/proteinChoice/:proteinChoice",
+      "/protein/:proteinChoice",
       this.getRecipeByProteinChoice.bind(this)
     );
     this.router.get(
-      "/dietaryRestriction/:dietaryRestriction",
+      "/dietary-restriction/:dietaryRestriction",
       this.getRecipeByDietaryRestriction.bind(this)
     );
     this.router.get(
-      "/religiousRestriction/:religiousRestriction",
+      "/religious-restriction/:religiousRestriction",
       this.getRecipeByReligiousRestriction.bind(this)
     );
 
@@ -93,105 +94,10 @@ class RecipeResource {
     }
   }
 
-  async getRecipeByName(req, res) {
-    try {
-      const recipeName = req.params.name;
-      const recipe = await this.recipeService.getRecipeByName(recipeName);
-      if (recipe) {
-        res.status(200).json(recipe);
-      } else {
-        res.status(404).json({ error: "Recipe not found" });
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async getRecipeByIngredients(req, res) {
-    try {
-      const ingredient = req.params.ingredients;
-      const regex = new RegExp(ingredient, "i");
-      const recipes = await this.recipeService.getRecipeByIngredients(regex);
-
-      if (recipes && recipes.length > 0) {
-        res.status(200).json(recipes);
-      } else {
-        res.status(404).json({ error: "Recipe not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async getRecipeByCuisineRegion(req, res) {
-    try {
-      const recipeRegion = req.params.cuisineRegion;
-      const recipe = await this.recipeService.getRecipeByCuisineRegion(
-        recipeRegion
-      );
-      if (recipe) {
-        res.status(200).json(recipe);
-      } else {
-        res.status(404).json({ error: "Recipe not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async getRecipeByProteinChoice(req, res) {
-    try {
-      const recipeProtein = req.params.proteinChoice;
-      const recipe = await this.recipeService.getRecipeByProteinChoice(
-        recipeProtein
-      );
-      if (recipe) {
-        res.status(200).json(recipe);
-      } else {
-        res.status(404).json({ error: "Recipe not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async getRecipeByDietaryRestriction(req, res) {
-    try {
-      const recipeDiet = req.params.dietaryRestriction;
-      const recipe = await this.recipeService.getRecipeByDietaryRestriction(
-        recipeDiet
-      );
-      if (recipe) {
-        res.status(200).json(recipe);
-      } else {
-        res.status(404).json({ error: "Recipe not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async getRecipeByReligiousRestriction(req, res) {
-    try {
-      const recipeReligion = req.params.religiousRestriction;
-      const recipe = await this.recipeService.getRecipeByReligiousRestriction(
-        recipeReligion
-      );
-      if (recipe) {
-        res.status(200).json(recipe);
-      } else {
-        res.status(404).json({ error: "Recipe not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Server error" });
-    }
-  }
-
   async updateRecipe(req, res) {
     try {
       const recipeId = req.params.recipeId;
-      const userId = req.user?.userId; // This should be a string
+      const userId = req.user?.userId;
 
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
@@ -228,7 +134,7 @@ class RecipeResource {
 
       const result = await this.recipeService.updateRecipe(
         recipeId,
-        userId, // Pass userId string here
+        userId,
         inputtedFields
       );
 
@@ -266,6 +172,104 @@ class RecipeResource {
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  // all GETs for search filtering
+
+  async getRecipeByName(req, res) {
+    try {
+      const recipeName = req.params.name;
+      const regex = new RegExp(recipeName, "i");
+      const recipes = await this.recipeService.getRecipeByName(regex);
+      if (recipes.length > 0) {
+        res.status(200).json(recipes);
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getRecipeByIngredients(req, res) {
+    try {
+      const ingredient = req.params.ingredients;
+      const regex = new RegExp(ingredient, "i");
+      const recipes = await this.recipeService.getRecipeByIngredients(regex);
+
+      if (recipes.length > 0) {
+        res.status(200).json(recipes);
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getRecipeByCuisineRegion(req, res) {
+    try {
+      const recipeRegion = req.params.cuisineRegion;
+      const regex = new RegExp(recipeRegion, "i");
+      const recipes = await this.recipeService.getRecipeByCuisineRegion(regex);
+      if (recipes.length > 0) {
+        res.status(200).json(recipes);
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getRecipeByProteinChoice(req, res) {
+    try {
+      const recipeProtein = req.params.proteinChoice;
+      const regex = new RegExp(recipeProtein, "i");
+      const recipes = await this.recipeService.getRecipeByProteinChoice(regex);
+      if (recipes.length > 0) {
+        res.status(200).json(recipes);
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getRecipeByDietaryRestriction(req, res) {
+    try {
+      const recipeDiet = req.params.dietaryRestriction;
+      const regex = new RegExp(recipeDiet, "i");
+      const recipes = await this.recipeService.getRecipeByDietaryRestriction(
+        regex
+      );
+      if (recipes.length > 0) {
+        res.status(200).json(recipes);
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getRecipeByReligiousRestriction(req, res) {
+    try {
+      const recipeReligion = req.params.religiousRestriction;
+      const regex = new RegExp(recipeReligion, "i");
+      const recipes = await this.recipeService.getRecipeByReligiousRestriction(
+        regex
+      );
+      if (recipes.length > 0) {
+        res.status(200).json(recipes);
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
     }
   }
 }

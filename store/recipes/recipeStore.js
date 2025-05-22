@@ -34,6 +34,42 @@ class RecipeStore {
     return result.insertedId;
   }
 
+  async updateRecipe(recipeId, userId, recipeFields) {
+    if (!ObjectId.isValid(recipeId)) {
+      throw new Error("Invalid recipeId");
+    }
+
+    const objectId = new ObjectId(recipeId);
+
+    const result = await this.collection.updateOne(
+      { _id: objectId, userId: userId }, // userId as string
+      { $set: recipeFields }
+    );
+
+    if (result.matchedCount === 0) {
+      throw new Error("No matching recipe found or nothing was updated.");
+    }
+
+    return result.modifiedCount > 0;
+  }
+
+  async deleteRecipe(recipeId, userId) {
+    if (!ObjectId.isValid(recipeId)) {
+      throw new Error("Invalid recipeId");
+    }
+
+    const objectId = new ObjectId(recipeId);
+
+    const result = await this.collection.deleteOne({
+      _id: new ObjectId(recipeId),
+      userId: userId,
+    });
+
+    return result.deletedCount > 0;
+  }
+
+  // all GET methods for filtering
+
   async getRecipesByUser(userId) {
     return await this.collection
       .find({ userId: new ObjectId(String(userId)) })
@@ -78,40 +114,6 @@ class RecipeStore {
       religiousRestriction: recipeReligion,
     });
     return recipe || null;
-  }
-
-  async updateRecipe(recipeId, userId, recipeFields) {
-    if (!ObjectId.isValid(recipeId)) {
-      throw new Error("Invalid recipeId");
-    }
-
-    const objectId = new ObjectId(recipeId);
-
-    const result = await this.collection.updateOne(
-      { _id: objectId, userId: userId }, // userId as string
-      { $set: recipeFields }
-    );
-
-    if (result.matchedCount === 0) {
-      throw new Error("No matching recipe found or nothing was updated.");
-    }
-
-    return result.modifiedCount > 0;
-  }
-
-  async deleteRecipe(recipeId, userId) {
-    if (!ObjectId.isValid(recipeId)) {
-      throw new Error("Invalid recipeId");
-    }
-
-    const objectId = new ObjectId(recipeId);
-
-    const result = await this.collection.deleteOne({
-      _id: new ObjectId(recipeId),
-      userId: userId,
-    });
-
-    return result.deletedCount > 0;
   }
 }
 
