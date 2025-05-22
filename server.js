@@ -6,8 +6,11 @@ import helmet from "helmet";
 import { connectDatabase } from "./store/database.js";
 import { userStore } from "./store/users/userStore.js";
 import { forgotPasswordStore } from "./store/forgotPassword/forgotPasswordStore.js";
-import { userResource } from "./resource/users/userResource.js";
 import { recipeStore } from "./store/recipes/recipeStore.js";
+import { reviewStore } from "./store/reviews/reviewStore.js";
+import { likeStore } from "./store/likes/likeStore.js";
+
+import { userResource } from "./resource/users/userResource.js";
 import { recipeResource } from "./resource/recipes/recipeResource.js";
 import { configureGooglePassport } from "./config/oauth/oauth.js";
 
@@ -34,9 +37,11 @@ connectDatabase()
     await userStore.init();
     await forgotPasswordStore.init();
     await recipeStore.init();
+    await likeStore.init();
+    await reviewStore.init();
 
-    app.use("/api/users", userResource.router);
-    app.use("/api/recipes", recipeResource.router);
+    await app.use("/api/users", userResource.router);
+    await app.use("/api/recipes", recipeResource.router);
 
     app.get("/", (req, res) => {
       res.send("Server is working");

@@ -67,4 +67,8 @@ export const recipeSchema = {
     required: false,
     default: "None",
   },
+  totalLikes: { type: Number, default: 0 },
+  totalReviews: { type: Number, default: 0 },
+  averageReviewRating: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
 };

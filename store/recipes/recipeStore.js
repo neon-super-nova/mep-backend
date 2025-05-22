@@ -26,6 +26,10 @@ class RecipeStore {
       proteinChoice: newRecipe.proteinChoice,
       dietaryRestriction: newRecipe.dietaryRestriction,
       religiousRestriction: newRecipe.religiousRestriction,
+      totalLikes: Number(newRecipe.totalLikes),
+      totalReviews: Number(newRecipe.totalReviews),
+      averageRating: Number(newRecipe.averageRating),
+      createdAt: new Date(),
     });
 
     if (!result.insertedId) {
