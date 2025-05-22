@@ -53,7 +53,6 @@ class RecipeResource {
       name,
       prepTime,
       cookTime,
-      totalTime,
       servings,
       ingredients,
       instructions,
@@ -62,9 +61,6 @@ class RecipeResource {
       proteinChoice,
       dietaryRestriction,
       religiousRestriction,
-      totalLikes,
-      totalReviews,
-      averageRating,
     } = req.body;
 
     const userId = req.user?.userId;
@@ -78,7 +74,6 @@ class RecipeResource {
         name,
         prepTime,
         cookTime,
-        totalTime,
         servings,
         ingredients,
         instructions,
@@ -87,9 +82,6 @@ class RecipeResource {
         proteinChoice,
         dietaryRestriction,
         religiousRestriction,
-        totalLikes,
-        totalReviews,
-        averageRating,
       };
       const result = await this.recipeService.addRecipe(recipe);
       res
@@ -115,7 +107,6 @@ class RecipeResource {
         "name",
         "prepTime",
         "cookTime",
-        "totalTime",
         "servings",
         "ingredients",
         "instructions",
@@ -124,10 +115,6 @@ class RecipeResource {
         "proteinChoice",
         "dietaryRestriction",
         "religiousRestriction",
-        "totalLikes",
-        "totalReviews",
-        "averageRating",
-        "createdAt",
       ];
 
       const inputtedFields = {};

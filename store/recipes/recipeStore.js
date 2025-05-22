@@ -17,7 +17,7 @@ class RecipeStore {
       name: newRecipe.name,
       prepTime: Number(newRecipe.prepTime),
       cookTime: Number(newRecipe.cookTime),
-      totalTime: Number(newRecipe.totalTime),
+      totalTime: Number(newRecipe.prepTime + newRecipe.cookTime),
       servings: Number(newRecipe.servings),
       ingredients: newRecipe.ingredients,
       instructions: newRecipe.instructions,
@@ -26,9 +26,9 @@ class RecipeStore {
       proteinChoice: newRecipe.proteinChoice,
       dietaryRestriction: newRecipe.dietaryRestriction,
       religiousRestriction: newRecipe.religiousRestriction,
-      totalLikes: Number(newRecipe.totalLikes),
-      totalReviews: Number(newRecipe.totalReviews),
-      averageRating: Number(newRecipe.averageRating),
+      totalLikes: 0,
+      totalReviews: 0,
+      averageRating: 0,
       createdAt: new Date(),
     });
 
