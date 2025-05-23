@@ -10,7 +10,6 @@ class ReviewStore {
     const db = getDatabase();
     this.collection = db.collection(reviewCollection);
   }
-  // add a review (rating, comment)
 }
 
 export const reviewStore = new ReviewStore();

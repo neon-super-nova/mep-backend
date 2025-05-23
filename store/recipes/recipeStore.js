@@ -119,6 +119,21 @@ class RecipeStore {
     });
     return recipe || null;
   }
+
+  // like and unlike methods
+  async incrementLikes(recipeId) {
+    await this.collection.updateOne(
+      { _id: new ObjectId(recipeId) },
+      { $inc: { totalLikes: 1 } }
+    );
+  }
+
+  async decrementLikes(recipeId) {
+    await this.collection.updateOne(
+      { _id: new ObjectId(recipeId) },
+      { $inc: { totalLikes: -1 } }
+    );
+  }
 }
 
 export const recipeStore = new RecipeStore();

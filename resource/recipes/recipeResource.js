@@ -1,11 +1,13 @@
 import express from "express";
 import { recipeService } from "../../service/recipes/recipeService.js";
+import { likeService } from "../../service/likes/likeService.js";
 import { authenticateToken } from "../../middleware/authentication.js";
 
 class RecipeResource {
   constructor() {
     this.router = express.Router();
     this.recipeService = recipeService;
+    this.likeService = likeService;
     this.initRoutes();
   }
 
@@ -43,6 +45,18 @@ class RecipeResource {
     this.router.get(
       "/religious-restriction/:religiousRestriction",
       this.getRecipeByReligiousRestriction.bind(this)
+    );
+
+    // likes and reviews
+    this.router.post(
+      "/:recipeId/like",
+      authenticateToken,
+      this.likeRecipe.bind(this)
+    );
+    this.router.post(
+      "/:recipeId/unlike",
+      authenticateToken,
+      this.unlikeRecipe.bind(this)
     );
 
     /*this.router.post("/id/:imageId", this.uploadImage.bind(this));*/
@@ -145,7 +159,6 @@ class RecipeResource {
           .json({ error: result.message || "Update failed" });
       }
     } catch (error) {
-      console.error(error);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -267,6 +280,52 @@ class RecipeResource {
       }
     } catch (error) {
       res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  // likes and reviews
+  async likeRecipe(req, res) {
+    try {
+      const recipeId = req.params.recipeId;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const result = await this.likeService.like(userId, recipeId);
+
+      if (result.success) {
+        return res.status(200).json({ message: result.success });
+      } else {
+        return res
+          .status(400)
+          .json({ error: result.error || "Could not like recipe" });
+      }
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async unlikeRecipe(req, res) {
+    try {
+      const recipeId = req.params.recipeId;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const result = await this.likeService.unlike(userId, recipeId);
+
+      if (result.success) {
+        return res.status(200).json({ message: "Recipe successfully unliked" });
+      } else {
+        return res
+          .status(400)
+          .json({ error: result.message || "Could not unlike recipe" });
+      }
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
     }
   }
 }
