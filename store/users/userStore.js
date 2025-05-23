@@ -131,7 +131,8 @@ class UserStore {
       email: profile.email,
       firstName: profile.name?.split(" ")[0] || "",
       lastName: profile.name?.split(" ")[1] || "",
-      googleToken: profile.accessToken, // store this token
+      googleToken: profile.googleToken, // changes
+      googleRefreshToken: profile.googleRefreshToken, // changes
       oauthProvider: "google",
       verified: true,
     };
