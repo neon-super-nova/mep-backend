@@ -7,7 +7,7 @@ class ReviewService {
 
   async addReview(userId, recipeId, rating, comment) {
     try {
-      await this.reviewStore.addReview();
+      await this.reviewStore.addReview(userId, recipeId, rating, comment);
       return { success: true };
     } catch (err) {
       if ((err.message = "Review does not exist")) {
@@ -17,9 +17,9 @@ class ReviewService {
     }
   }
 
-  async deleteRevie() {}
+  async deleteReview(userId, recipeId) {}
 
-  async updateReview() {}
+  async updateReview(userId, recipeId, fieldsToUpdate) {}
 
   async getReviewRating() {}
 
