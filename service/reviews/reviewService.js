@@ -10,18 +10,58 @@ class ReviewService {
       await this.reviewStore.addReview(userId, recipeId, rating, comment);
       return { success: true };
     } catch (err) {
-      if ((err.message = "Review does not exist")) {
+      if (err.message === "Review does not exist") {
         return { error: err.message };
       }
       throw err;
     }
   }
 
-  async deleteReview(userId, recipeId) {}
+  async deleteReview(userId, recipeId) {
+    try {
+      await this.reviewStore.deleteReview(userId, recipeId);
+      return { success: true };
+    } catch (err) {
+      if (err.message === "Review does not exist") {
+        return { error: err.message };
+      }
+      throw err;
+    }
+  }
 
-  async updateReview(userId, recipeId, fieldsToUpdate) {}
+  async updateReview(userId, recipeId, fieldsToUpdate) {
+    try {
+      await this.reviewStore.updateReview(userId, recipeId, fieldsToUpdate);
+      return { success: true };
+    } catch (err) {
+      if (err.message === "Review does not exist") {
+        return { error: err.message };
+      }
+      throw err;
+    }
+  }
 
-  async getReviewRating() {}
+  async getRecipeAverageRating(recipeId) {
+    try {
+      await this.reviewStore.getRecipeAverageRating(recipeId);
+      return { success: true };
+    } catch (err) {
+      if (err.message === "Review not found") {
+        return { error: err.message };
+      }
+      throw err;
+    }
+  }
 
-  async getAllRecipeReviews() {}
+  async getAllRecipeReviews(recipeId) {
+    try {
+      await this.reviewStore.getAllRecipeReviews(recipeId);
+      return { success: true };
+    } catch (err) {
+      if (err.message === "No reviews found") {
+        return { error: err.message };
+      }
+      throw err;
+    }
+  }
 }
