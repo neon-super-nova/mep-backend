@@ -1,6 +1,7 @@
 import express from "express";
 import { recipeService } from "../../service/recipes/recipeService.js";
 import { likeService } from "../../service/likes/likeService.js";
+import { reviewService } from "../../service/reviews/reviewService.js";
 import { authenticateToken } from "../../middleware/authentication.js";
 
 class RecipeResource {
@@ -8,6 +9,7 @@ class RecipeResource {
     this.router = express.Router();
     this.recipeService = recipeService;
     this.likeService = likeService;
+    this.reviewService = reviewService;
     this.initRoutes();
   }
 
@@ -47,7 +49,7 @@ class RecipeResource {
       this.getRecipeByReligiousRestriction.bind(this)
     );
 
-    // likes and reviews
+    // likes
     this.router.post(
       "/:recipeId/like",
       authenticateToken,
@@ -58,6 +60,28 @@ class RecipeResource {
       authenticateToken,
       this.unlikeRecipe.bind(this)
     );
+
+    // reviews
+    this.router.post(
+      "/:recipeId/review",
+      authenticateToken,
+      this.addReview.bind(this)
+    );
+    this.router.delete(
+      "/:recipeId/review",
+      authenticateToken,
+      this.deleteReview.bind(this)
+    );
+    this.router.patch(
+      "/:recipeId/review",
+      authenticateToken,
+      this.updateReview.bind(this)
+    );
+    this.router.get(
+      "/:recipeId/review-stats",
+      this.getRecipeReviewStats.bind(this)
+    );
+    this.router.get("/:recipeId/reviews", this.getAllRecipeReviews.bind(this));
 
     /*this.router.post("/id/:imageId", this.uploadImage.bind(this));*/
   }
@@ -283,7 +307,7 @@ class RecipeResource {
     }
   }
 
-  // likes and reviews
+  // likes
   async likeRecipe(req, res) {
     try {
       const recipeId = req.params.recipeId;
@@ -322,12 +346,113 @@ class RecipeResource {
       } else {
         return res
           .status(400)
-          .json({ error: result.message || "Could not unlike recipe" });
+          .json({ error: result.error || "Could not unlike recipe" });
       }
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }
   }
+
+  // reviews
+  async addReview(req, res) {
+    try {
+      const { rating, comment } = req.body;
+      const recipeId = req.params.recipeId;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const result = await this.reviewService.addReview(
+        userId,
+        recipeId,
+        rating,
+        comment
+      );
+      if (result.success) {
+        return res.status(200).json({ message: "Review successfully added" });
+      } else {
+        return res
+          .status(400)
+          .json({ error: result.error || "Could not add review" });
+      }
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async deleteReview(req, res) {
+    try {
+      const recipeId = req.params.recipeId;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const result = await this.reviewService.deleteReview(userId, recipeId);
+      if (result.success) {
+        return res.status(200).json({ message: "Review deleted" });
+      } else {
+        return res.status(400).json({ error: result.error });
+      }
+    } catch (err) {
+      return res.status(500).json({ err: "Server error" });
+    }
+  }
+
+  async updateReview(req, res) {
+    try {
+      const recipeId = req.params.recipeId;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const inputtedFields = req.body;
+      const allowedFields = ["rating", "comment"];
+      const fieldsToUpdate = {};
+
+      for (const field of allowedFields) {
+        if (field in inputtedFields) {
+          fieldsToUpdate[field] = inputtedFields[field];
+        }
+      }
+
+      if (Object.keys(fieldsToUpdate).length === 0) {
+        return res.status(400).json({ error: "Empty fields" });
+      }
+      const result = await this.reviewService.updateReview(
+        userId,
+        recipeId,
+        fieldsToUpdate
+      );
+
+      if (result.success) {
+        return res.status(200).json({ message: "Review successfully updated" });
+      } else {
+        return res.status(400).json({ error: result.error || "Update failed" });
+      }
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getRecipeReviewStats(req, res) {
+    try {
+      const recipeId = req.params.recipeId;
+      const result = await this.reviewService.getRecipeStats(recipeId);
+      if (result.error) {
+        return res.status(404).json({ error: result.error });
+      }
+      return res.status(200).json(result);
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getAllRecipeReviews(req, res) {}
 }
 /* async uploadImage(req, res) {
     try {

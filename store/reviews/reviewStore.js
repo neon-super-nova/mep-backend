@@ -24,67 +24,32 @@ class ReviewStore {
   }
 
   async addReview(userId, recipeId, rating, comment = "") {
-    const existingReview = await this.checkForExistingReview(userId, recipeId);
-    if (existingReview) {
-      throw new Error("User has already submitted a review for this recipe");
-    }
-
-    const review = {
-      userId,
-      recipeId,
-      rating,
-      comment,
-      createdAt: new Date(),
-    };
-    await this.collection.insertOne(review);
-
-    // now, update recipeStats collection
-    const recipeInfo = await this.recipeStatsCollection.findOne({ recipeId });
-    if (recipeInfo) {
-      const newReviewCount = recipeInfo.reviewCount + 1;
-      const newAverageRating =
-        (recipeInfo.averageRating * recipeInfo.reviewCount + rating) /
-        newReviewCount;
-      await this.recipeStatsCollection.updateOne(
-        { recipeId: recipeId },
-        {
-          $set: {
-            averageRating: newAverageRating,
-            reviewCount: newReviewCount,
-          },
-        }
+    try {
+      const existingReview = await this.checkForExistingReview(
+        userId,
+        recipeId
       );
-    } else {
-      await this.recipeStatsCollection.insertOne({
+      if (existingReview) {
+        throw new Error("User has already submitted a review for this recipe");
+      }
+      const review = {
+        userId,
         recipeId,
-        averageRating: rating,
-        reviewCount: 1,
-      });
-    }
-  }
+        rating,
+        comment,
+        createdAt: new Date(),
+      };
+      await this.collection.insertOne(review);
 
-  async deleteReview(userId, recipeId) {
-    const existingReview = await this.checkForExistingReview(userId, recipeId);
-    if (!existingReview) {
-      throw new Error("Review does not exist");
-    }
-    await this.collection.deleteOne({ userId, recipeId });
-
-    // now, update recipeStats collection
-    const recipeInfo = await this.recipeStatsCollection.findOne({ recipeId });
-    if (recipeInfo) {
-      const newReviewCount = recipeInfo.reviewCount - 1;
-
-      if (newReviewCount === 0) {
-        // No reviews left, remove the summary document
-        await this.recipeStatsCollection.deleteOne({ recipeId });
-      } else {
-        const totalRatingSum =
-          recipeInfo.averageRating * recipeInfo.reviewCount;
-        const newAverageRating = (totalRatingSum - rating) / newReviewCount;
-
+      // now, update recipeStats collection
+      const recipeInfo = await this.recipeStatsCollection.findOne({ recipeId });
+      if (recipeInfo) {
+        const newReviewCount = recipeInfo.reviewCount + 1;
+        const newAverageRating =
+          (recipeInfo.averageRating * recipeInfo.reviewCount + rating) /
+          newReviewCount;
         await this.recipeStatsCollection.updateOne(
-          { recipeId },
+          { recipeId: recipeId },
           {
             $set: {
               averageRating: newAverageRating,
@@ -92,22 +57,66 @@ class ReviewStore {
             },
           }
         );
+      } else {
+        await this.recipeStatsCollection.insertOne({
+          recipeId,
+          averageRating: rating,
+          reviewCount: 1,
+        });
       }
-    } else {
-      // pass
+    } catch (err) {
+      throw err;
     }
   }
 
-  async updateReview(userId, recipeId) {
+  async deleteReview(userId, recipeId) {
+    try {
+      const existingReview = await this.checkForExistingReview(
+        userId,
+        recipeId
+      );
+      if (!existingReview) {
+        throw new Error("Review does not exist");
+      }
+      await this.collection.deleteOne({ userId, recipeId });
+
+      // now, update recipeStats collection
+      const recipeInfo = await this.recipeStatsCollection.findOne({ recipeId });
+      if (recipeInfo) {
+        const newReviewCount = recipeInfo.reviewCount - 1;
+
+        if (newReviewCount === 0) {
+          // No reviews left, remove the summary document
+          await this.recipeStatsCollection.deleteOne({ recipeId });
+        } else {
+          const totalRatingSum =
+            recipeInfo.averageRating * recipeInfo.reviewCount;
+          const newAverageRating = (totalRatingSum - rating) / newReviewCount;
+
+          await this.recipeStatsCollection.updateOne(
+            { recipeId },
+            {
+              $set: {
+                averageRating: newAverageRating,
+                reviewCount: newReviewCount,
+              },
+            }
+          );
+        }
+      } else {
+        // pass
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async updateReview(userId, recipeId, fieldsToUpdate) {
     const existingReview = await this.checkForExistingReview(userId, recipeId);
     if (!existingReview) {
       throw new Error("Review does not exist");
     }
-    const fieldsToUpdate = {
-      rating,
-      comment,
-      createdAt: newDate(),
-    };
+    fieldsToUpdate.createdAt = new Date();
     await this.collection.updateOne(
       { userId, recipeId },
       { $set: fieldsToUpdate }
@@ -115,7 +124,7 @@ class ReviewStore {
   }
 
   async getRecipeStats(recipeId) {
-    const review = await this.recipeStatsCollection.findOne(recipeId);
+    const review = await this.recipeStatsCollection.findOne({ recipeId });
     if (!review) {
       throw new Error("Review not found");
     }

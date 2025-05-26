@@ -1,4 +1,5 @@
-import { reviewStore } from "../../store/reviews/reviewStore";
+import { recipeStatsCollection } from "../../store/reviews/recipeStatsSchema.js";
+import { reviewStore } from "../../store/reviews/reviewStore.js";
 
 class ReviewService {
   constructor() {
@@ -10,7 +11,9 @@ class ReviewService {
       await this.reviewStore.addReview(userId, recipeId, rating, comment);
       return { success: true };
     } catch (err) {
-      if (err.message === "Review does not exist") {
+      if (
+        err.message === "User has already submitted a review for this recipe"
+      ) {
         return { error: err.message };
       }
       throw err;
@@ -43,8 +46,7 @@ class ReviewService {
 
   async getRecipeStats(recipeId) {
     try {
-      const result = await this.reviewStore.getRecipeAverageRating(recipeId);
-      return result;
+      return await this.reviewStore.getRecipeStats(recipeId);
     } catch (err) {
       if (err.message === "Review not found") {
         return { error: err.message };
@@ -65,3 +67,5 @@ class ReviewService {
     }
   }
 }
+
+export const reviewService = new ReviewService();
