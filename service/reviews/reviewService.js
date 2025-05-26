@@ -41,10 +41,10 @@ class ReviewService {
     }
   }
 
-  async getRecipeAverageRating(recipeId) {
+  async getRecipeStats(recipeId) {
     try {
-      await this.reviewStore.getRecipeAverageRating(recipeId);
-      return { success: true };
+      const result = await this.reviewStore.getRecipeAverageRating(recipeId);
+      return result;
     } catch (err) {
       if (err.message === "Review not found") {
         return { error: err.message };
@@ -55,8 +55,8 @@ class ReviewService {
 
   async getAllRecipeReviews(recipeId) {
     try {
-      await this.reviewStore.getAllRecipeReviews(recipeId);
-      return { success: true };
+      const result = await this.reviewStore.getAllRecipeReviews(recipeId);
+      return result.toArray();
     } catch (err) {
       if (err.message === "No reviews found") {
         return { error: err.message };

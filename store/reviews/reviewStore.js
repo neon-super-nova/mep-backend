@@ -114,12 +114,14 @@ class ReviewStore {
     );
   }
 
-  async getRecipeAverageRating(recipeId) {
+  async getRecipeStats(recipeId) {
     const review = await this.recipeStatsCollection.findOne(recipeId);
     if (!review) {
       throw new Error("Review not found");
     }
-    return review.averageRating;
+    const averageRating = review.averageRating;
+    const reviewCount = review.reviewCount;
+    return { averageRating, reviewCount };
   }
 
   async getAllRecipeReviews(recipeId) {
