@@ -135,10 +135,7 @@ class ReviewStore {
 
   async getAllRecipeReviews(recipeId) {
     const reviews = await this.collection.find({ recipeId }).toArray();
-    if (reviews.length === 0) {
-      throw new Error("No reviews found");
-    }
-    return reviews;
+    return reviews || null;
   }
 }
 

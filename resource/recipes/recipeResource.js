@@ -452,7 +452,18 @@ class RecipeResource {
     }
   }
 
-  async getAllRecipeReviews(req, res) {}
+  async getAllRecipeReviews(req, res) {
+    try {
+      const recipeId = req.params.recipeId;
+      const result = await this.reviewService.getAllRecipeReviews(recipeId);
+      if (result.error) {
+        return res.status(404).json({ error: result.error });
+      }
+      return res.status(200).json(result);
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
 }
 /* async uploadImage(req, res) {
     try {
