@@ -8,6 +8,7 @@ export const userSchema = {
   firstName: String,
   lastName: String,
   email: String,
+  pictureUrl: { type: String, required: false, default: null },
   facebookToken: { type: String, default: null },
   googleToken: { type: String, default: null },
   appleToken: { type: String, default: null },

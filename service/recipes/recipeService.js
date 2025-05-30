@@ -33,6 +33,21 @@ class RecipeService {
     return { success: true };
   }
 
+  async updateRecipeImage(userId, recipeId, imageUrl) {
+    try {
+      return await this.recipeStore.updateRecipeImage(
+        userId,
+        recipeId,
+        imageUrl
+      );
+    } catch (err) {
+      if (err.message === "RECIPE_NOT_FOUND_OR_FORBIDDEN") {
+        return { error: "Recipe not found or forbidden action" };
+      }
+      throw err;
+    }
+  }
+
   // all GET methods for filtering
   async getRecipeByName(regex) {
     return await this.recipeStore.collection

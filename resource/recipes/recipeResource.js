@@ -3,6 +3,8 @@ import { recipeService } from "../../service/recipes/recipeService.js";
 import { likeService } from "../../service/likes/likeService.js";
 import { reviewService } from "../../service/reviews/reviewService.js";
 import { authenticateToken } from "../../middleware/authentication.js";
+import upload from "../../middleware/upload.js";
+import { cloudinaryUpload } from "../../config/cloudinary/cloudinaryUpload.js";
 
 class RecipeResource {
   constructor() {
@@ -24,6 +26,12 @@ class RecipeResource {
       "/:recipeId",
       authenticateToken,
       this.deleteRecipe.bind(this)
+    );
+    this.router.post(
+      "/:recipeId/image",
+      authenticateToken,
+      upload.single("image"),
+      this.uploadImage.bind(this)
     );
 
     // all GETs for search filtering
@@ -82,8 +90,6 @@ class RecipeResource {
       this.getRecipeReviewStats.bind(this)
     );
     this.router.get("/:recipeId/reviews", this.getAllRecipeReviews.bind(this));
-
-    /*this.router.post("/id/:imageId", this.uploadImage.bind(this));*/
   }
 
   async addRecipe(req, res) {
@@ -209,6 +215,40 @@ class RecipeResource {
     }
   }
 
+  async uploadImage(req, res) {
+    const recipeId = req.params.recipeId;
+    const userId = req.user?.userId;
+    const image = req.file;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!image) {
+      return res.status(400).json({ error: "No image uploaded" });
+    }
+
+    try {
+      const uploadResult = await cloudinaryUpload(image.buffer, "recipes");
+      console.log("Cloudinary upload result:", uploadResult);
+
+      const updatedRecipe = await this.recipeService.updateRecipeImage(
+        userId,
+        recipeId,
+        uploadResult.secure_url
+      );
+
+      if (!updatedRecipe) {
+        return res
+          .status(400)
+          .json({ error: "Recipe not found or forbidden action" });
+      }
+      return res.status(200).json({ success: true, updatedRecipe });
+    } catch (err) {
+      console.error("Upload error:", err);
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
   // all GETs for search filtering
 
   async getRecipeByName(req, res) {
@@ -465,19 +505,5 @@ class RecipeResource {
     }
   }
 }
-/* async uploadImage(req, res) {
-    try {
-      const imageId = req.params.imageId;
-      const image = req.file;
-      const result = await this.recipeService.uploadImage(imageId, image);
-      if (result) {
-        res.status(200).json({ message: "Image successfully uploaded" });
-      } else {
-        res.status(404).json({ error: "Image not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Server error" });
-    }
-  }*/
 
 export const recipeResource = new RecipeResource();

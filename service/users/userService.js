@@ -129,6 +129,17 @@ class UserService {
 
     return { success: true, token, user: newUser };
   }
+  // adding user picture
+  async updateUserPictureUrl(userId, pictureUrl) {
+    try {
+      return await this.userStore.updateUserPictureUrl(userId, pictureUrl);
+    } catch (err) {
+      if (err.message === "USER_NOT_FOUND") {
+        return { error: "User not found" };
+      }
+      throw err;
+    }
+  }
 }
 
 export const userService = new UserService();

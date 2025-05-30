@@ -1,6 +1,6 @@
 import { recipeCollection } from "./recipeSchema.js";
 import { getDatabase } from "../database.js";
-import { ObjectId } from "mongodb";
+import { ObjectId, ReturnDocument } from "mongodb";
 
 class RecipeStore {
   constructor() {
@@ -72,8 +72,28 @@ class RecipeStore {
     return result.deletedCount > 0;
   }
 
-  // all GET methods for filtering
+  async updateRecipeImage(userId, recipeId, imageUrl) {
+    try {
+      const id = new ObjectId(recipeId);
 
+      const foundRecipe = await this.collection.findOne({ _id: id, userId });
+
+      if (!foundRecipe) {
+        throw new Error("RECIPE_NOT_FOUND_OR_FORBIDDEN");
+      }
+
+      const result = await this.collection.findOneAndUpdate(
+        { _id: id, userId },
+        { $set: { imageUrl } },
+        { returnDocument: "after" }
+      );
+      return result;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // all GET methods for filtering
   async getRecipesByUser(userId) {
     return await this.collection
       .find({ userId: new ObjectId(String(userId)) })
@@ -137,23 +157,3 @@ class RecipeStore {
 }
 
 export const recipeStore = new RecipeStore();
-
-/*  const objectId = ObjectId.createFromHex(recipeId);
-    use this objectId to find the recipe and update with the fields specified
-    update inputted fields
-
-    also: 
-
-    function formatTime(minutes) {
-      if (minutes < 60) {
-        return { minutes };
-      } else {
-        return {
-          hours: Math.floor(minutes / 60),
-          minutes: minutes % 60
-        };
-      }
-    }
-    
-    might need in front end to format the time
-*/

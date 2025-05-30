@@ -1,6 +1,6 @@
 import { getDatabase } from "../database.js";
 import bcrypt from "bcrypt";
-import { ObjectId } from "mongodb";
+import { ObjectId, ReturnDocument } from "mongodb";
 
 class UserStore {
   constructor() {
@@ -138,6 +138,21 @@ class UserStore {
     };
     const insertResult = await this.collection.insertOne(newUser);
     return { ...newUser, _id: insertResult.insertedId };
+  }
+
+  // updating userProfile picture:
+  async updateUserPictureUrl(userId, pictureUrl) {
+    const id = new ObjectId(userId);
+    const user = await this.collection.findOne({ _id: id });
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+    const result = await this.collection.findOneAndUpdate(
+      { _id: id },
+      { $set: { pictureUrl } },
+      { returnDocument: "after" }
+    );
+    return result;
   }
 }
 

@@ -2,7 +2,10 @@ import express from "express";
 import passport from "passport";
 import { userService } from "../../service/users/userService.js";
 import { forgotPasswordService } from "../../service/forgotPassword/forgotPasswordService.js";
-import { generateToken } from "../../config/serverSessions/jwt.js"; // Make sure path is correct
+import { generateToken } from "../../config/serverSessions/jwt.js";
+import upload from "../../middleware/upload.js";
+import { cloudinaryUpload } from "../../config/cloudinary/cloudinaryUpload.js";
+import { authenticateToken } from "../../middleware/authentication.js";
 
 class UserResource {
   constructor() {
@@ -18,6 +21,12 @@ class UserResource {
     this.router.post("/logout", this.logout.bind(this));
     this.router.post("/forgot-password", this.forgotPassword.bind(this));
     this.router.post("/reset-password", this.resetPassword.bind(this));
+    this.router.post(
+      "/image",
+      authenticateToken,
+      upload.single("image"),
+      this.uploadUserPicture.bind(this)
+    );
 
     // Google OAuth routes using Passport
     this.router.get(
@@ -189,6 +198,35 @@ class UserResource {
     } catch (error) {
       console.error("Google OAuth callback error:", error);
       return res.status(500).json({ error: "OAuth callback error" });
+    }
+  }
+
+  // adding user picture
+  async uploadUserPicture(req, res) {
+    const userId = req.user?.userId;
+    const image = req.file;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!image) {
+      return res.status(400).json({ error: "No image uploaded" });
+    }
+
+    try {
+      const imageUpload = await cloudinaryUpload(image.buffer, "users");
+      const result = await userService.updateUserPictureUrl(
+        userId,
+        imageUpload.secure_url
+      );
+      if (!result) {
+        return res.status(400).json({ error: "User not found" });
+      }
+      return res.status(200).json({ success: true, result });
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({ error: "Server error" });
     }
   }
 }
