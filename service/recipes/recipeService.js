@@ -49,6 +49,18 @@ class RecipeService {
   }
 
   // all GET methods for filtering
+
+  async getRecipeById(recipeId) {
+    try {
+      return await this.recipeStore.getRecipeById(recipeId);
+    } catch (err) {
+      if (err.message === "RECIPE_NOT_FOUND") {
+        return { error: "Recipe does not exist" };
+      }
+      throw err;
+    }
+  }
+
   async getRecipeByName(regex) {
     return await this.recipeStore.collection
       .find({ name: { $regex: regex } })
