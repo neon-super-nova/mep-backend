@@ -1,10 +1,10 @@
 import cloudinary from "./cloudinary.js";
 import { Readable } from "stream";
 
-export async function cloudinaryUpload(fileBuffer) {
+export async function cloudinaryUpload(fileBuffer, folder) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder: "recipes" },
+      { folder },
       (error, result) => {
         if (error) {
           console.error("Cloudinary upload error:", error);

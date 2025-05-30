@@ -89,7 +89,6 @@ class RecipeStore {
       );
       return result;
     } catch (err) {
-      console.error("Error in updateRecipeImage:", err);
       throw err;
     }
   }
