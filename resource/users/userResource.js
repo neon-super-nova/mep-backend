@@ -223,9 +223,10 @@ class UserResource {
       if (!result) {
         return res.status(400).json({ error: "User not found" });
       }
-      return res.status(200).json({ success: true, result });
+      return res
+        .status(200)
+        .json({ success: true, userPictureUrl: imageUpload.secure_url });
     } catch (err) {
-      console.log(err);
       return res.status(500).json({ error: "Server error" });
     }
   }

@@ -230,7 +230,6 @@ class RecipeResource {
 
     try {
       const uploadResult = await cloudinaryUpload(image.buffer, "recipes");
-      console.log("Cloudinary upload result:", uploadResult);
 
       const updatedRecipe = await this.recipeService.updateRecipeImage(
         userId,
@@ -243,9 +242,10 @@ class RecipeResource {
           .status(400)
           .json({ error: "Recipe not found or forbidden action" });
       }
-      return res.status(200).json({ success: true, updatedRecipe });
+      return res
+        .status(200)
+        .json({ success: true, imageUrl: uploadResult.secure_url });
     } catch (err) {
-      console.error("Upload error:", err);
       return res.status(500).json({ error: "Server error" });
     }
   }
