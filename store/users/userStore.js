@@ -154,6 +154,19 @@ class UserStore {
     );
     return result;
   }
+
+  async getUser(userId) {
+    const id = new ObjectId(userId);
+    const user = await this.collection.findOne({ _id: id });
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+    return {
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    };
+  }
 }
 
 export const userStore = new UserStore();

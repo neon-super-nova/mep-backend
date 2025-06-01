@@ -6,6 +6,7 @@ import { generateToken } from "../../config/serverSessions/jwt.js";
 import upload from "../../middleware/upload.js";
 import { cloudinaryUpload } from "../../config/cloudinary/cloudinaryUpload.js";
 import { authenticateToken } from "../../middleware/authentication.js";
+import { isIdValid } from "../../utils/validation/isIdValid.js";
 
 class UserResource {
   constructor() {
@@ -27,6 +28,7 @@ class UserResource {
       upload.single("image"),
       this.uploadUserPicture.bind(this)
     );
+    this.router.get("/:userId", this.getUser.bind(this));
 
     // Google OAuth routes using Passport
     this.router.get(
@@ -226,6 +228,22 @@ class UserResource {
       return res
         .status(200)
         .json({ success: true, userPictureUrl: imageUpload.secure_url });
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getUser(req, res) {
+    const userId = req.params.userId;
+    if (!isIdValid(userId)) {
+      return res.status(401).json({ error: "Invalid id" });
+    }
+    try {
+      const result = await userService.getUser(userId);
+      if (result?.error) {
+        return res.status(400).json({ error: result.error });
+      }
+      return res.status(200).json({ success: true, userInfo: result });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }
