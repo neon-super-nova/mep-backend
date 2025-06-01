@@ -291,10 +291,11 @@ class RecipeResource {
       const regex = new RegExp(ingredient, "i");
       const recipes = await this.recipeService.getRecipeByIngredients(regex);
 
-      if (result.error) {
-        return res.status(404).json({ error: result.error });
+      if (recipes.length > 0) {
+        res.status(200).json(recipes);
+      } else {
+        res.status(404).json({ error: "Recipe not found" });
       }
-      return res.status(200).json({ success: true, recipe: result });
     } catch (error) {
       res.status(500).json({ error: "Server error" });
     }
