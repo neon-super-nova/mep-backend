@@ -94,6 +94,16 @@ class RecipeStore {
   }
 
   // all GET methods for filtering
+
+  async getRecipeById(recipeId) {
+    const id = new ObjectId(recipeId);
+    const recipe = await this.collection.findOne({ _id: id });
+    if (!recipe) {
+      throw new Error("RECIPE_NOT_FOUND");
+    }
+    return recipe;
+  }
+
   async getRecipesByUser(userId) {
     return await this.collection
       .find({ userId: new ObjectId(String(userId)) })

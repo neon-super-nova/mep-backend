@@ -140,6 +140,17 @@ class UserService {
       throw err;
     }
   }
+
+  async getUser(userId) {
+    try {
+      return await this.userStore.getUser(userId);
+    } catch (err) {
+      if (err.message === "USER_NOT_FOUND") {
+        return { err: "User not found" };
+      }
+      throw err;
+    }
+  }
 }
 
 export const userService = new UserService();

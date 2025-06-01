@@ -5,6 +5,7 @@ import { reviewService } from "../../service/reviews/reviewService.js";
 import { authenticateToken } from "../../middleware/authentication.js";
 import upload from "../../middleware/upload.js";
 import { cloudinaryUpload } from "../../config/cloudinary/cloudinaryUpload.js";
+import { isIdValid } from "../../utils/validation/isIdValid.js";
 
 class RecipeResource {
   constructor() {
@@ -35,6 +36,7 @@ class RecipeResource {
     );
 
     // all GETs for search filtering
+    this.router.get("/:recipeId", this.getRecipeById.bind(this));
     this.router.get("/name/:name", this.getRecipeByName.bind(this));
     this.router.get(
       "/ingredients/:ingredients",
@@ -250,6 +252,22 @@ class RecipeResource {
     }
   }
   // all GETs for search filtering
+
+  async getRecipeById(req, res) {
+    const recipeId = req.params.recipeId;
+    if (!isIdValid(recipeId)) {
+      return res.status(400).json({ error: "Invalid id" });
+    }
+    try {
+      const result = await this.recipeService.getRecipeById(recipeId);
+      if (result?.error) {
+        return res.status(400).json({ error: result.error });
+      }
+      return res.status(200).json({ success: true, recipe: result });
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
 
   async getRecipeByName(req, res) {
     try {
