@@ -141,9 +141,22 @@ class UserService {
     }
   }
 
+  // user getters
   async getUser(userId) {
     try {
       return await this.userStore.getUser(userId);
+    } catch (err) {
+      if (err.message === "USER_NOT_FOUND") {
+        return { err: "User not found" };
+      }
+      throw err;
+    }
+  }
+
+  async getUserRecipeCount(userId) {
+    try {
+      const result = await this.userStore.getUserRecipeCount(userId);
+      return result;
     } catch (err) {
       if (err.message === "USER_NOT_FOUND") {
         return { err: "User not found" };

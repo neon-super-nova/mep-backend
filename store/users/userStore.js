@@ -1,6 +1,6 @@
 import { getDatabase } from "../database.js";
 import bcrypt from "bcrypt";
-import { ObjectId, ReturnDocument } from "mongodb";
+import { ObjectId } from "mongodb";
 
 class UserStore {
   constructor() {
@@ -10,7 +10,7 @@ class UserStore {
   async init() {
     const db = getDatabase();
     this.collection = db.collection("users");
-    console.log("User collection initialized");
+    this.recipeCollection = db.collection("recipes");
   }
 
   async userExistsByEmail(email) {
@@ -155,6 +155,7 @@ class UserStore {
     return result;
   }
 
+  // user getters
   async getUser(userId) {
     const id = new ObjectId(userId);
     const user = await this.collection.findOne({ _id: id });
@@ -166,6 +167,16 @@ class UserStore {
       firstName: user.firstName,
       lastName: user.lastName,
     };
+  }
+
+  async getUserRecipeCount(userId) {
+    const id = new ObjectId(userId);
+    const user = await this.collection.findOne({ _id: id });
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+    const count = await this.recipeCollection.countDocuments({ userId });
+    return count;
   }
 }
 

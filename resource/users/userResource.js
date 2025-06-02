@@ -28,7 +28,6 @@ class UserResource {
       upload.single("image"),
       this.uploadUserPicture.bind(this)
     );
-    this.router.get("/:userId", this.getUser.bind(this));
 
     // Google OAuth routes using Passport
     this.router.get(
@@ -44,6 +43,10 @@ class UserResource {
       passport.authenticate("google", { session: false }),
       this.googleOAuthCallback.bind(this)
     );
+
+    // user getters
+    this.router.get("/:userId", this.getUser.bind(this));
+    this.router.get("/:userId/recipes", this.getUserRecipeCount.bind(this));
   }
 
   async register(req, res) {
@@ -233,6 +236,7 @@ class UserResource {
     }
   }
 
+  // user getters
   async getUser(req, res) {
     const userId = req.params.userId;
     if (!isIdValid(userId)) {
@@ -244,6 +248,22 @@ class UserResource {
         return res.status(400).json({ error: result.error });
       }
       return res.status(200).json({ success: true, userInfo: result });
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getUserRecipeCount(req, res) {
+    const userId = req.params.userId;
+    if (!isIdValid(userId)) {
+      return res.status(401).json({ error: "Invalid id" });
+    }
+    try {
+      const result = await userService.getUserRecipeCount(userId);
+      if (result?.error) {
+        return res.status(400).json({ error: result.error });
+      }
+      return res.status(200).json({ recipesSubmittedByUser: result });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }
