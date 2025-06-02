@@ -6,7 +6,7 @@ import { generateToken } from "../../config/serverSessions/jwt.js";
 import upload from "../../middleware/upload.js";
 import { cloudinaryUpload } from "../../config/cloudinary/cloudinaryUpload.js";
 import { authenticateToken } from "../../middleware/authentication.js";
-import { isIdValid } from "../../utils/validation/isIdValid.js";
+import { isIdValid } from "../../config/validation/isIdValid.js";
 
 class UserResource {
   constructor() {

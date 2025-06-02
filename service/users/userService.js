@@ -147,7 +147,7 @@ class UserService {
       return await this.userStore.getUser(userId);
     } catch (err) {
       if (err.message === "USER_NOT_FOUND") {
-        return { err: "User not found" };
+        return { error: "User not found" };
       }
       throw err;
     }
@@ -158,7 +158,7 @@ class UserService {
       return await this.userStore.getUserRecipeCount(userId);
     } catch (err) {
       if (err.message === "USER_NOT_FOUND") {
-        return { err: "User not found" };
+        return { error: "User not found" };
       }
       throw err;
     }
@@ -169,7 +169,7 @@ class UserService {
       return await this.userStore.getUserLikeCount(userId);
     } catch (err) {
       if (err.message === "USER_NOT_FOUND") {
-        return { err: "User not found" };
+        return { error: "User not found" };
       }
       throw err;
     }

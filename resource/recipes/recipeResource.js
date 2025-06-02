@@ -5,7 +5,7 @@ import { reviewService } from "../../service/reviews/reviewService.js";
 import { authenticateToken } from "../../middleware/authentication.js";
 import upload from "../../middleware/upload.js";
 import { cloudinaryUpload } from "../../config/cloudinary/cloudinaryUpload.js";
-import { isIdValid } from "../../utils/validation/isIdValid.js";
+import { isIdValid } from "../../config/validation/isIdValid.js";
 
 class RecipeResource {
   constructor() {
