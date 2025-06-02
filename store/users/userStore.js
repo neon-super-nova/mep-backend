@@ -11,6 +11,7 @@ class UserStore {
     const db = getDatabase();
     this.collection = db.collection("users");
     this.recipeCollection = db.collection("recipes");
+    this.likesCollection = db.collection("likes");
   }
 
   async userExistsByEmail(email) {
@@ -176,6 +177,16 @@ class UserStore {
       throw new Error("USER_NOT_FOUND");
     }
     const count = await this.recipeCollection.countDocuments({ userId });
+    return count;
+  }
+
+  async getUserLikeCount(userId) {
+    const id = new ObjectId(userId);
+    const user = await this.collection.findOne({ _id: id });
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+    const count = await this.likesCollection.countDocuments({ userId });
     return count;
   }
 }

@@ -47,6 +47,7 @@ class UserResource {
     // user getters
     this.router.get("/:userId", this.getUser.bind(this));
     this.router.get("/:userId/recipes", this.getUserRecipeCount.bind(this));
+    this.router.get("/:userId/likes", this.getUserLikeCount.bind(this));
   }
 
   async register(req, res) {
@@ -259,11 +260,27 @@ class UserResource {
       return res.status(401).json({ error: "Invalid id" });
     }
     try {
-      const result = await userService.getUserRecipeCount(userId);
-      if (result?.error) {
-        return res.status(400).json({ error: result.error });
+      const count = await userService.getUserRecipeCount(userId);
+      if (count?.error) {
+        return res.status(400).json({ error: count.error });
       }
-      return res.status(200).json({ recipesSubmittedByUser: result });
+      return res.status(200).json({ recipeCount: count });
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getUserLikeCount(req, res) {
+    const userId = req.params.userId;
+    if (!isIdValid(userId)) {
+      return res.status(401).json({ error: "Invalid id" });
+    }
+    try {
+      const count = await userService.getUserLikeCount(userId);
+      if (count?.error) {
+        return res.status(400).json({ error: count.error });
+      }
+      return res.status(200).json({ likeCount: count });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }
