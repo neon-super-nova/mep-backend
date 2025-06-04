@@ -9,7 +9,6 @@ class ForgotPasswordStore {
   async init() {
     const db = getDatabase();
     this.collection = db.collection(forgotPasswordCollection);
-    console.log("ForgotPassword collection successfully initialized");
   }
 
   async createResetToken({ token, email, expiresAt }) {

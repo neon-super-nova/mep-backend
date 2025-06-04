@@ -1,6 +1,7 @@
 import express from "express";
 import passport from "passport";
 import { userService } from "../../service/users/userService.js";
+import { userInfoService } from "../../service/user-info/userInfoService.js";
 import { forgotPasswordService } from "../../service/forgotPassword/forgotPasswordService.js";
 import { generateToken } from "../../config/serverSessions/jwt.js";
 import upload from "../../middleware/upload.js";
@@ -48,6 +49,13 @@ class UserResource {
     this.router.get("/:userId", this.getUser.bind(this));
     this.router.get("/:userId/recipes", this.getUserRecipeCount.bind(this));
     this.router.get("/:userId/likes", this.getUserLikeCount.bind(this));
+
+    // user-info
+    this.router.post(
+      "/user-info",
+      authenticateToken,
+      this.addUserInfo.bind(this)
+    );
   }
 
   async register(req, res) {
@@ -282,6 +290,39 @@ class UserResource {
       }
       return res.status(200).json({ likeCount: count });
     } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  //user-info collection methods
+  async addUserInfo(req, res) {
+    const userId = req.user?.userId;
+    const { favoriteCuisine, favoriteMeal, favoriteDish, dietaryRestriction } =
+      req.body;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    try {
+      const result = await userInfoService.addUserInfo(
+        userId,
+        favoriteCuisine,
+        favoriteMeal,
+        favoriteDish,
+        dietaryRestriction
+      );
+      if (result.success) {
+        return res
+          .status(200)
+          .json({ message: "User info successfully submitted" });
+      } else {
+        return res
+          .status(400)
+          .json({ error: result.error || "User not found" });
+      }
+    } catch (err) {
+      console.log(err);
       return res.status(500).json({ error: "Server error" });
     }
   }

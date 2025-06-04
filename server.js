@@ -5,6 +5,7 @@ import passport from "passport";
 import helmet from "helmet";
 import { connectDatabase } from "./store/database.js";
 import { userStore } from "./store/users/userStore.js";
+import { userInfoStore } from "./store/user-info/userInfoStore.js";
 import { forgotPasswordStore } from "./store/forgotPassword/forgotPasswordStore.js";
 import { recipeStore } from "./store/recipes/recipeStore.js";
 import { reviewStore } from "./store/reviews/reviewStore.js";
@@ -35,6 +36,7 @@ app.use(helmet());
 connectDatabase()
   .then(async () => {
     await userStore.init();
+    await userInfoStore.init();
     await forgotPasswordStore.init();
     await recipeStore.init();
     await likeStore.init();

@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb";
+
 export const userInfoCollection = "user-info";
 
 export const UserInfo = {
