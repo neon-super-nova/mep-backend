@@ -45,6 +45,24 @@ class UserInfoStore {
     };
     await this.collection.insertOne(userInfoToAdd);
   }
+
+  async updateUserInfo(userId, fieldsToUpdate) {
+    const id = new ObjectId(userId);
+    const findUser = await this.userCollection.findOne({ _id: id });
+    if (!findUser) {
+      throw new Error("USER_NOT_FOUND");
+    }
+
+    const checkForPreviousInfo = await this.checkForPreviousInfo(userId);
+    if (!checkForPreviousInfo) {
+      throw new Error("USER_INFO_NOT_FOUND");
+    }
+
+    return await this.collection.updateOne(
+      { userId },
+      { $set: fieldsToUpdate }
+    );
+  }
 }
 
 export const userInfoStore = new UserInfoStore();

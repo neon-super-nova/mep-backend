@@ -16,10 +16,11 @@ class UserResource {
   }
 
   initRoutes() {
+    // user login and registration
     this.router.post("/register", this.register.bind(this));
     this.router.get("/verify-email/:token", this.verifyEmail.bind(this));
     this.router.post("/login", this.login.bind(this));
-    this.router.patch("/:userId", this.updateUser.bind(this));
+    this.router.patch("/", authenticateToken, this.updateUser.bind(this));
     this.router.post("/logout", this.logout.bind(this));
     this.router.post("/forgot-password", this.forgotPassword.bind(this));
     this.router.post("/reset-password", this.resetPassword.bind(this));
@@ -55,6 +56,11 @@ class UserResource {
       "/user-info",
       authenticateToken,
       this.addUserInfo.bind(this)
+    );
+    this.router.patch(
+      "/user-info",
+      authenticateToken,
+      this.updateUserInfo.bind(this)
     );
   }
 
@@ -156,9 +162,8 @@ class UserResource {
   }
 
   async updateUser(req, res) {
-    const { userId } = req.params;
+    const userId = req.user?.userId;
     const patchFields = req.body;
-
     const allowedFields = ["username", "firstName", "lastName"];
     const inputtedFields = {};
 
@@ -323,6 +328,46 @@ class UserResource {
       }
     } catch (err) {
       console.log(err);
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async updateUserInfo(req, res) {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const patchFields = req.body;
+
+    const allowedFields = [
+      "favoriteCuisine",
+      "favoriteMeal",
+      "favoriteDish",
+      "dietaryRestriction",
+    ];
+    const fieldsToUpdate = {};
+    for (const field in patchFields) {
+      if (allowedFields.includes(field)) {
+        fieldsToUpdate[field] = patchFields[field];
+      }
+    }
+
+    if (Object.keys(fieldsToUpdate).length === 0) {
+      return res.status(400).json({ error: "No fields provided" });
+    }
+
+    try {
+      const result = await userInfoService.updateUserInfo(
+        userId,
+        fieldsToUpdate
+      );
+      if (result.success) {
+        return res.status(200).json({ message: "Successful update" });
+      } else {
+        return res.status(400).json({ error: result.error || "Update failed" });
+      }
+    } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }
   }
