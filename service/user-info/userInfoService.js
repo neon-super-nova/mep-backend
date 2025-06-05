@@ -44,6 +44,51 @@ class UserInfoService {
       throw err;
     }
   }
+
+  // user-info getters
+  async getUserFavoriteCuisine(userId) {
+    try {
+      return await this.userInfoStore.getUserFavoriteCuisine(userId);
+    } catch (err) {
+      if (err.message === "USER_NOT_FOUND") {
+        return { error: "User not found" };
+      }
+      throw err;
+    }
+  }
+
+  async getUserFavoriteMeal(userId) {
+    try {
+      return await this.userInfoStore.getUserFavoriteMeal(userId);
+    } catch (err) {
+      if (err.message === "USER_NOT_FOUND") {
+        return { error: "User not found" };
+      }
+      throw err;
+    }
+  }
+
+  async getUserFavoriteDish(userId) {
+    try {
+      return await this.userInfoStore.getUserFavoriteDish(userId);
+    } catch (err) {
+      if (err.message === "USER_NOT_FOUND") {
+        return { error: "User not found" };
+      }
+      throw err;
+    }
+  }
+
+  async getUserDietaryRestriction(userId) {
+    try {
+      return await this.userInfoStore.getUserDietaryRestriction(userId);
+    } catch (err) {
+      if (err.message === "USER_NOT_FOUND") {
+        return { error: "User not found" };
+      }
+      throw err;
+    }
+  }
 }
 
 export const userInfoService = new UserInfoService();

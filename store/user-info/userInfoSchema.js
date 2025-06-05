@@ -7,5 +7,5 @@ export const UserInfo = {
   favoriteCuisine: String,
   favoriteMeal: String,
   favoriteDish: String,
-  dietaryRestriction: { type: String, required: false, default: null },
+  dietaryRestriction: { type: [String], required: false, default: null },
 };

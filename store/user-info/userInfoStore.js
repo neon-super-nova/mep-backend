@@ -14,6 +14,11 @@ class UserInfoStore {
     this.userCollection = db.collection(userCollection);
   }
 
+  async findUser(userId) {
+    const id = new ObjectId(userId);
+    return Boolean(await this.userCollection.findOne({ _id: id }));
+  }
+
   async checkForPreviousInfo(userId) {
     return Boolean(await this.collection.findOne({ userId }));
   }
@@ -25,9 +30,8 @@ class UserInfoStore {
     favoriteDish,
     dietaryRestriction = ""
   ) {
-    const id = new ObjectId(userId);
-    const user = await this.userCollection.findOne({ _id: id });
-    if (!user) {
+    const findUser = await this.findUser(userId);
+    if (!findUser) {
       throw new Error("USER_NOT_FOUND");
     }
 
@@ -47,8 +51,7 @@ class UserInfoStore {
   }
 
   async updateUserInfo(userId, fieldsToUpdate) {
-    const id = new ObjectId(userId);
-    const findUser = await this.userCollection.findOne({ _id: id });
+    const findUser = await this.findUser(userId);
     if (!findUser) {
       throw new Error("USER_NOT_FOUND");
     }
@@ -62,6 +65,47 @@ class UserInfoStore {
       { userId },
       { $set: fieldsToUpdate }
     );
+  }
+
+  //user-info getters
+  async getUserFavoriteCuisine(userId) {
+    const findUser = await this.findUser(userId);
+    if (!findUser) {
+      throw new Error("USER_NOT_FOUND");
+    }
+    const result = await this.collection.findOne({ userId });
+    const favoriteCuisine = result.favoriteCuisine;
+    return favoriteCuisine || null;
+  }
+
+  async getUserFavoriteMeal(userId) {
+    const findUser = await this.findUser(userId);
+    if (!findUser) {
+      throw new Error("USER_NOT_FOUND");
+    }
+    const result = await this.collection.findOne({ userId });
+    const favoriteMeal = result.favoriteMeal;
+    return favoriteMeal || null;
+  }
+
+  async getUserFavoriteDish(userId) {
+    const findUser = await this.findUser(userId);
+    if (!findUser) {
+      throw new Error("USER_NOT_FOUND");
+    }
+    const result = await this.collection.findOne({ userId });
+    const favoriteDish = result.favoriteDish;
+    return favoriteDish || null;
+  }
+
+  async getUserDietaryRestriction(userId) {
+    const findUser = await this.findUser(userId);
+    if (!findUser) {
+      throw new Error("USER_NOT_FOUND");
+    }
+    const result = await this.collection.findOne({ userId });
+    const dietaryRestriction = result.dietaryRestriction;
+    return dietaryRestriction || null;
   }
 }
 
