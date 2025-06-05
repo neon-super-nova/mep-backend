@@ -10,7 +10,7 @@ export function authenticateToken(req, res, next) {
     return res.status(401).json({ error: "Unauthorized: Malformed token" });
 
   try {
-    const decoded = verifyToken(token); // use your verify function
+    const decoded = verifyToken(token);
 
     req.user = {
       userId: decoded.userId, // assuming your token has userId

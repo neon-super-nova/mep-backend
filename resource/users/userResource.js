@@ -62,22 +62,7 @@ class UserResource {
       authenticateToken,
       this.updateUserInfo.bind(this)
     );
-    this.router.get(
-      "/user-info/favorite-cuisine/:userId",
-      this.getUserFavoriteCuisine.bind(this)
-    );
-    this.router.get(
-      "/user-info/favorite-meal/:userId",
-      this.getUserFavoriteMeal.bind(this)
-    );
-    this.router.get(
-      "/user-info/favorite-dish/:userId",
-      this.getUserFavoriteDish.bind(this)
-    );
-    this.router.get(
-      "/user-info/dietary-restriction/:userId",
-      this.getUserDietaryRestriction.bind(this)
-    );
+    this.router.get("/user-info/:userId", this.getUserInfo.bind(this));
   }
 
   async register(req, res) {
@@ -347,7 +332,6 @@ class UserResource {
       return res.status(500).json({ error: "Server error" });
     }
   }
-
   async updateUserInfo(req, res) {
     const userId = req.user?.userId;
     if (!userId) {
@@ -389,68 +373,17 @@ class UserResource {
   }
 
   // user-info getters
-  async getUserFavoriteCuisine(req, res) {
+  async getUserInfo(req, res) {
     const userId = req.params.userId;
     if (!isIdValid(userId)) {
       return res.status(401).json({ error: "Invalid id" });
     }
     try {
-      const result = await userInfoService.getUserFavoriteCuisine(userId);
+      const result = await userInfoService.getUserInfo(userId);
       if (result?.error) {
         return res.status(400).json({ error: result.error || "Error" });
       }
-      return res.status(200).json({ favoriteCuisine: result });
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async getUserFavoriteDish(req, res) {
-    const userId = req.params.userId;
-    if (!isIdValid(userId)) {
-      return res.status(401).json({ error: "Invalid id" });
-    }
-    try {
-      const result = await userInfoService.getUserFavoriteDish(userId);
-      if (result?.error) {
-        return res.status(400).json({ error: result.error || "Error" });
-      }
-      return res.status(200).json({ favoriteDish: result });
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async getUserFavoriteMeal(req, res) {
-    const userId = req.params.userId;
-    if (!isIdValid(userId)) {
-      return res.status(401).json({ error: "Invalid id" });
-    }
-    try {
-      const result = await userInfoService.getUserFavoriteMeal(userId);
-      if (result?.error) {
-        return res.status(400).json({ error: result.error || "Error" });
-      }
-      return res.status(200).json({ favoriteMeal: result });
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async getUserDietaryRestriction(req, res) {
-    const userId = req.params.userId;
-    if (!isIdValid(userId)) {
-      return res.status(401).json({ error: "Invalid id" });
-    }
-    try {
-      const result = await userInfoService.getUserDietaryRestriction(userId);
-      if (result?.error) {
-        return res.status(400).json({ error: result.error || "Error" });
-      }
-      return res.status(200).json({ dietaryRestriction: result });
+      return res.status(200).json({ userInfo: result });
     } catch (err) {
       console.log(err);
       return res.status(500).json({ error: "Server error" });

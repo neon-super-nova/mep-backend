@@ -68,44 +68,24 @@ class UserInfoStore {
   }
 
   //user-info getters
-  async getUserFavoriteCuisine(userId) {
+  async getUserInfo(userId) {
     const findUser = await this.findUser(userId);
     if (!findUser) {
       throw new Error("USER_NOT_FOUND");
     }
-    const result = await this.collection.findOne({ userId });
-    const favoriteCuisine = result.favoriteCuisine;
-    return favoriteCuisine || null;
-  }
-
-  async getUserFavoriteMeal(userId) {
-    const findUser = await this.findUser(userId);
-    if (!findUser) {
-      throw new Error("USER_NOT_FOUND");
-    }
-    const result = await this.collection.findOne({ userId });
-    const favoriteMeal = result.favoriteMeal;
-    return favoriteMeal || null;
-  }
-
-  async getUserFavoriteDish(userId) {
-    const findUser = await this.findUser(userId);
-    if (!findUser) {
-      throw new Error("USER_NOT_FOUND");
-    }
-    const result = await this.collection.findOne({ userId });
-    const favoriteDish = result.favoriteDish;
-    return favoriteDish || null;
-  }
-
-  async getUserDietaryRestriction(userId) {
-    const findUser = await this.findUser(userId);
-    if (!findUser) {
-      throw new Error("USER_NOT_FOUND");
-    }
-    const result = await this.collection.findOne({ userId });
-    const dietaryRestriction = result.dietaryRestriction;
-    return dietaryRestriction || null;
+    const result = await this.collection.findOne(
+      { userId },
+      {
+        projection: {
+          _id: 0,
+          favoriteCuisine: 1,
+          favoriteMeal: 1,
+          favoriteDish: 1,
+          dietaryRestriction: 1,
+        },
+      }
+    );
+    return result || null;
   }
 }
 
