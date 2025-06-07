@@ -48,8 +48,11 @@ class UserResource {
 
     // user getters
     this.router.get("/:userId", this.getUser.bind(this));
-    this.router.get("/:userId/recipes", this.getUserRecipeCount.bind(this));
-    this.router.get("/:userId/likes", this.getUserLikeCount.bind(this));
+    this.router.get(
+      "/:userId/recipe-count",
+      this.getUserRecipeCount.bind(this)
+    );
+    this.router.get("/:userId/like-count", this.getUserLikeCount.bind(this));
 
     // user-info
     this.router.post(
