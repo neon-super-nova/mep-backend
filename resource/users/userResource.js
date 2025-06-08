@@ -53,6 +53,7 @@ class UserResource {
       this.getUserRecipeCount.bind(this)
     );
     this.router.get("/:userId/like-count", this.getUserLikeCount.bind(this));
+    this.router.get("/:userId/picture-url", this.getUserPictureUrl.bind(this));
 
     // user-info
     this.router.post(
@@ -298,6 +299,24 @@ class UserResource {
         return res.status(400).json({ error: count.error });
       }
       return res.status(200).json({ likeCount: count });
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getUserPictureUrl(req, res) {
+    const userId = req.params.userId;
+    if (!isIdValid(userId)) {
+      return res.status(401).json({ error: "Invalid id" });
+    }
+    try {
+      const url = await userService.getUserPictureUrl(userId);
+      if (url?.error) {
+        return res
+          .status(400)
+          .json({ error: url.error || "Error fetching url" });
+      }
+      return res.status(200).json({ pictureUrl: url });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }

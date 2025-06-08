@@ -14,6 +14,11 @@ class UserStore {
     this.likesCollection = db.collection("likes");
   }
 
+  async findUser(userId) {
+    const id = new ObjectId(userId);
+    return Boolean(await this.collection.findOne({ _id: id }));
+  }
+
   async userExistsByEmail(email) {
     const user = await this.collection.findOne({ email });
     return !!user;
@@ -141,11 +146,10 @@ class UserStore {
     return { ...newUser, _id: insertResult.insertedId };
   }
 
-  // updating userProfile picture:
+  // user profile picture
   async updateUserPictureUrl(userId, pictureUrl) {
-    const id = new ObjectId(userId);
-    const user = await this.collection.findOne({ _id: id });
-    if (!user) {
+    const findUser = await this.findUser(userId);
+    if (!findUser) {
       throw new Error("USER_NOT_FOUND");
     }
     const result = await this.collection.findOneAndUpdate(
@@ -158,8 +162,7 @@ class UserStore {
 
   // user getters
   async getUser(userId) {
-    const id = new ObjectId(userId);
-    const user = await this.collection.findOne({ _id: id });
+    const user = await this.collection.findOne({ _id: new ObjectId(userId) });
     if (!user) {
       throw new Error("USER_NOT_FOUND");
     }
@@ -171,9 +174,8 @@ class UserStore {
   }
 
   async getUserRecipeCount(userId) {
-    const id = new ObjectId(userId);
-    const user = await this.collection.findOne({ _id: id });
-    if (!user) {
+    const findUser = await this.findUser(userId);
+    if (!findUser) {
       throw new Error("USER_NOT_FOUND");
     }
     const count = await this.recipeCollection.countDocuments({ userId });
@@ -188,6 +190,15 @@ class UserStore {
     }
     const count = await this.likesCollection.countDocuments({ userId });
     return count;
+  }
+
+  async getUserPictureUrl(userId) {
+    const user = await this.collection.findOne({ _id: new ObjectId(userId) });
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+    const url = user.pictureUrl;
+    return url;
   }
 }
 
