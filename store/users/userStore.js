@@ -148,8 +148,9 @@ class UserStore {
 
   // user profile picture
   async updateUserPictureUrl(userId, pictureUrl) {
-    const findUser = await this.findUser(userId);
-    if (!findUser) {
+    const id = new ObjectId(userId);
+    const user = await this.collection.findOne({ _id: id });
+    if (!user) {
       throw new Error("USER_NOT_FOUND");
     }
     const result = await this.collection.findOneAndUpdate(

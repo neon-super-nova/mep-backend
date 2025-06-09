@@ -251,6 +251,7 @@ class UserResource {
         .status(200)
         .json({ success: true, userPictureUrl: imageUpload.secure_url });
     } catch (err) {
+      console.log(err);
       return res.status(500).json({ error: "Server error" });
     }
   }
