@@ -175,6 +175,17 @@ class UserService {
     }
   }
 
+  async getUserGlobalLikeCount(userId) {
+    try {
+      return await this.userStore.getUserGlobalLikeCount(userId);
+    } catch (err) {
+      if (err.message === "USER_NOT_FOUND") {
+        return { error: "User not found" };
+      }
+      throw err;
+    }
+  }
+
   async getUserPictureUrl(userId) {
     try {
       return await this.userStore.getUserPictureUrl(userId);

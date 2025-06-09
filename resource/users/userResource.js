@@ -53,6 +53,7 @@ class UserResource {
       this.getUserRecipeCount.bind(this)
     );
     this.router.get("/:userId/like-count", this.getUserLikeCount.bind(this));
+    this.router.get("/:userId/global-like-count", this.getUserGlobalLikeCount);
     this.router.get("/:userId/picture-url", this.getUserPictureUrl.bind(this));
 
     // user-info
@@ -300,6 +301,22 @@ class UserResource {
         return res.status(400).json({ error: count.error });
       }
       return res.status(200).json({ likeCount: count });
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getUserGlobalLikeCount(req, res) {
+    const userId = req.params.userId;
+    if (!isIdValid(userId)) {
+      return res.status(401).json({ error: "Invalid id" });
+    }
+    try {
+      const globalLikes = await userService.getUserGlobalLikeCount(userId);
+      if (globalLikes?.error) {
+        return res.status(400).json({ error: globalLikes.error });
+      }
+      return res.status(200).json({ globalLikeCount: globalLikes });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }

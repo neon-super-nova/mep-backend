@@ -193,6 +193,30 @@ class UserStore {
     return count;
   }
 
+  async getUserGlobalLikeCount(userId) {
+    const id = new ObjectId(userId);
+    const user = await this.collection.findOne({ _id: id });
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+    const query = await this.recipeCollection
+      .aggregate([
+        { $match: { userId: userId } },
+        {
+          $group: {
+            _id: null,
+            totalLikes: { $sum: "$totalLikes" },
+          },
+        },
+      ])
+      .toArray();
+    // aggregate functions in mongodb return a cursor always
+    // s0, resulting array (ex. global count = 100) will look like:
+    // query = [{_id: null, totalLikes: 100}]
+
+    return query.length > 0 ? query[0].totalLikes : 0;
+  }
+
   async getUserPictureUrl(userId) {
     const user = await this.collection.findOne({ _id: new ObjectId(userId) });
     if (!user) {
