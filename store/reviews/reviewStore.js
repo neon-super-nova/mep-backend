@@ -116,11 +116,43 @@ class ReviewStore {
     if (!existingReview) {
       throw new Error("Review does not exist");
     }
+
+    const oldRating = existingReview.rating;
+    const newRating = fieldsToUpdate.rating;
+
     fieldsToUpdate.createdAt = new Date();
     await this.collection.updateOne(
       { userId, recipeId },
       { $set: fieldsToUpdate }
     );
+
+    if (newRating !== null && newRating !== oldRating) {
+      const recipeStats = await this.recipeStatsCollection.findOne({
+        recipeId,
+      });
+
+      if (recipeStats) {
+        // need to update new rating properly in recipeStats collection
+        const reviewCount = recipeStats.reviewCount;
+        // Calculate new average rating
+        // Remove old rating and add new rating, weighted by reviewCount
+        const totalRatingSum = recipeStats.averageRating * reviewCount;
+        const newTotalRatingSum = totalRatingSum - oldRating + newRating;
+        const newAverageRating = newTotalRatingSum / reviewCount;
+
+        await this.recipeStatsCollection.updateOne(
+          { recipeId },
+          { $set: { averageRating: newAverageRating } }
+        );
+      } else {
+        // If no stats found, create one (edge case)
+        await this.recipeStatsCollection.insertOne({
+          recipeId,
+          averageRating: newRating,
+          reviewCount: 1,
+        });
+      }
+    }
   }
 
   async getRecipeStats(recipeId) {

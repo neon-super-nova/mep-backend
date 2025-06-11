@@ -164,25 +164,6 @@ class RecipeStore {
       { $inc: { totalLikes: -1 } }
     );
   }
-
-  //trending recipe functions
-
-  async calculateGlobalAverageRating() {
-    // calculate average rating of all recipes with at least 1 review (value C)
-    // based on imdb c calculation
-  }
-
-  async getTrendingRecipes() {
-    // calculate trending recipes using weighted rating and return top 2
-  }
-
-  async refreshCache() {
-    // recalculate and store the trending recipes in mongodb for later retrieval
-  }
-
-  async getCachedTrendingRecipes() {
-    // fetch tredning recipes from cache
-  }
 }
 
 export const recipeStore = new RecipeStore();
