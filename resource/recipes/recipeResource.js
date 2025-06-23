@@ -35,6 +35,9 @@ class RecipeResource {
       this.uploadImage.bind(this)
     );
 
+    // dashboard recipes
+    this.router.get("/top-rated", this.getTopRatedRecipes.bind(this));
+
     // all GETs for search filtering
     this.router.get("/:recipeId", this.getRecipeById.bind(this));
     this.router.get("/name/:name", this.getRecipeByName.bind(this));
@@ -520,6 +523,17 @@ class RecipeResource {
       return res.status(200).json(result);
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  // trending recipes
+  async getTopRatedRecipes(req, res) {
+    try {
+      const topRatedRecipes = await this.recipeService.getTopRatedRecipes();
+      return res.status(200).json(topRatedRecipes);
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({ error: "Error occured" });
     }
   }
 }
