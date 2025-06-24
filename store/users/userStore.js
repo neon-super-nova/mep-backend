@@ -28,8 +28,6 @@ class UserStore {
   }
 
   async addNewUser(newUser) {
-    console.log("[addNewUser] Received signup for:", newUser.email);
-
     const email = newUser.email.trim().toLowerCase();
     const username = newUser.username.trim().toLowerCase();
 
@@ -38,7 +36,6 @@ class UserStore {
     });
 
     if (existingUser) {
-      console.log("[addNewUser] Duplicate found:", existingUser.email);
       throw new Error("User already registered");
     }
 
@@ -53,8 +50,6 @@ class UserStore {
       firstName: newUser.firstName || "",
       lastName: newUser.lastName || "",
     };
-
-    console.log("[addNewUser] Inserting user:", email);
     await this.collection.insertOne(userData);
   }
 

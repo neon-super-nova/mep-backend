@@ -53,6 +53,14 @@ class RecipeService {
 
   // all GET methods for filtering
 
+  async getAllRecipeIds() {
+    try {
+      return await this.recipeStore.getAllRecipeIds();
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getRecipeById(recipeId) {
     try {
       return await this.recipeStore.getRecipeById(recipeId);

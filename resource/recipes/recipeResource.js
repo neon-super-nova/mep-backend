@@ -39,6 +39,7 @@ class RecipeResource {
     this.router.get("/top-rated", this.getTopRatedRecipes.bind(this));
 
     // all GETs for search filtering
+    this.router.get("/", this.getAllRecipeIds.bind(this));
     this.router.get("/:recipeId", this.getRecipeById.bind(this));
     this.router.get("/name/:name", this.getRecipeByName.bind(this));
     this.router.get(
@@ -255,6 +256,18 @@ class RecipeResource {
     }
   }
   // all GETs for search filtering
+
+  async getAllRecipeIds(req, res) {
+    try {
+      const recipes = await this.recipeService.getAllRecipeIds();
+      if (recipes?.error) {
+        return res.status(400).json({ error: recipes.error });
+      }
+      return res.status(200).json({ recipes });
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
 
   async getRecipeById(req, res) {
     const recipeId = req.params.recipeId;
