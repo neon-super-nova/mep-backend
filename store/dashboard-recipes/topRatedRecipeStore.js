@@ -90,10 +90,11 @@ class TopRatedRecipeStore {
       return {
         name: recipe.name,
         averageRating: recipeStat?.averageRating ?? 0,
-        reviewCount: recipeStat?.reviewCount ?? 0,
         cuisineRegion: recipe.cuisineRegion,
         religiousRestriction: recipe.religiousRestriction,
         dietaryRestriction: recipe.dietaryRestriction,
+        proteinChoice: recipe.proteinChoice,
+        imageUrl: recipe.imageUrl,
         // can add return other attributes of recipe according to ui needs
       };
     });
@@ -101,7 +102,7 @@ class TopRatedRecipeStore {
     return fullTopRatedRecipeInfo;
   }
 
-  async refreshTopRatedCache(minReviewCount = 1, limit = 2) {
+  async refreshTopRatedRecipeCache(minReviewCount = 1, limit = 2) {
     // recalculate and store the trending recipes in mongodb for later retrieval
     // first get the trending recipes with full details
     const topRatedRecipes = await this.getTopRatedRecipes(
@@ -109,7 +110,7 @@ class TopRatedRecipeStore {
       limit
     );
 
-    // insert a single cache document in trending-recipes table, using a fixed id "cache" so theres only 1 cache document
+    // insert a single cache document in top-rated-recipes collection, using a fixed id "cache" so theres only 1 cache document at all times
     const cacheDoc = {
       _id: "cache",
       updatedAt: new Date(),

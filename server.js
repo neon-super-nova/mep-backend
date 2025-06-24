@@ -45,7 +45,7 @@ connectDatabase()
     await likeStore.init();
     await reviewStore.init();
     await topRatedRecipeStore.init();
-    await topRatedRecipeStore.refreshTopRatedCache();
+    await topRatedRecipeStore.refreshTopRatedRecipeCache();
     startRefreshJob();
 
     await app.use("/api/users", userResource.router);

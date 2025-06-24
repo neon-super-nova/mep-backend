@@ -11,7 +11,7 @@ const startRefreshJob = () => {
         topRatedRecipeStore.init();
       }
       // Refresh cache
-      topRatedRecipeStore.refreshCache();
+      topRatedRecipeStore.refreshTopRatedRecipeCache();
       console.log("Trending recipe cache refreshed successfully.");
     } catch (err) {
       console.error("Error refreshing trending recipe cache:", err);

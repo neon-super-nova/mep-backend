@@ -1,5 +1,6 @@
 import { recipeStore } from "../../store/recipes/recipeStore.js";
 import { topRatedRecipeStore } from "../../store/dashboard-recipes/topRatedRecipeStore.js";
+import { trendingRecipeStore } from "../../store/dashboard-recipes/trendingRecipeStore.js";
 
 class RecipeService {
   constructor() {
@@ -111,9 +112,13 @@ class RecipeService {
     return await this.recipeStore.getRecipesByUser(userId);
   }
 
-  // fetch trending recipes
+  // dashboard recipes
   async getTopRatedRecipes() {
     return await this.topRatedRecipeStore.getCachedTopRatedRecipes();
+  }
+
+  async getTrendingRecipes() {
+    // return await
   }
 }
 
