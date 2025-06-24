@@ -12,6 +12,9 @@ class UserStore {
     this.collection = db.collection("users");
     this.recipeCollection = db.collection("recipes");
     this.likesCollection = db.collection("likes");
+
+    await this.collection.createIndex({ email: 1 }, { unique: true });
+    await this.collection.createIndex({ username: 1 }, { unique: true });
   }
 
   async findUser(userId) {
@@ -25,19 +28,25 @@ class UserStore {
   }
 
   async addNewUser(newUser) {
+    console.log("[addNewUser] Received signup for:", newUser.email);
+
+    const email = newUser.email.trim().toLowerCase();
+    const username = newUser.username.trim().toLowerCase();
+
     const existingUser = await this.collection.findOne({
-      $or: [{ username: newUser.username }, { email: newUser.email }],
+      $or: [{ username }, { email }],
     });
 
     if (existingUser) {
+      console.log("[addNewUser] Duplicate found:", existingUser.email);
       throw new Error("User already registered");
     }
 
     const hashedPassword = await bcrypt.hash(newUser.password, 10);
 
     const userData = {
-      username: newUser.username,
-      email: newUser.email,
+      username,
+      email,
       password: hashedPassword,
       verified: false,
       verificationToken: newUser.verificationToken,
@@ -45,6 +54,7 @@ class UserStore {
       lastName: newUser.lastName || "",
     };
 
+    console.log("[addNewUser] Inserting user:", email);
     await this.collection.insertOne(userData);
   }
 
@@ -132,6 +142,11 @@ class UserStore {
   }
 
   async registerGoogleUser(profile) {
+    const existingUser = await this.collection.findOne({
+      email: profile.email,
+    });
+    if (existingUser) return existingUser;
+
     const newUser = {
       username: profile.email,
       email: profile.email,

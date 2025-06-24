@@ -13,8 +13,8 @@ export function authenticateToken(req, res, next) {
     const decoded = verifyToken(token);
 
     req.user = {
-      userId: decoded.userId, // assuming your token has userId
-      username: decoded.username, // and username
+      userId: decoded.userId,
+      username: decoded.username,
     };
 
     next();
