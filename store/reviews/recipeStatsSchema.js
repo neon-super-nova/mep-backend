@@ -6,4 +6,5 @@ export const recipeStatsSchema = {
   recipeId: ObjectId,
   averageRating: Number,
   reviewCount: Number,
+  likeCount: Number,
 };

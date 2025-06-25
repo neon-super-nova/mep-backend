@@ -1,5 +1,7 @@
 import nodeCron from "node-cron";
 import { topRatedRecipeStore } from "../store/dashboard-recipes/topRatedRecipeStore.js";
+import { trendingRecipeStore } from "../store/dashboard-recipes/trendingRecipeStore.js";
+
 const startRefreshJob = () => {
   // schedule refresh for midnight everyday
   // 0 0  * * * (means 0 seconds 0 minutes)
@@ -10,8 +12,13 @@ const startRefreshJob = () => {
       if (!topRatedRecipeStore.collection) {
         topRatedRecipeStore.init();
       }
+      if (!trendingRecipeStore.collection) {
+        trendingRecipeStore.init();
+      }
       // Refresh cache
       topRatedRecipeStore.refreshTopRatedRecipeCache();
+      console.log("Top rated recipe cache refreshed successfully.");
+      trendingRecipeStore.refreshTrendingRecipeCache();
       console.log("Trending recipe cache refreshed successfully.");
     } catch (err) {
       console.error("Error refreshing trending recipe cache:", err);

@@ -26,9 +26,6 @@ class RecipeStore {
       proteinChoice: newRecipe.proteinChoice,
       dietaryRestriction: newRecipe.dietaryRestriction,
       religiousRestriction: newRecipe.religiousRestriction,
-      totalLikes: 0,
-      totalReviews: 0,
-      averageRating: 0,
       createdAt: new Date(),
     });
 
@@ -159,21 +156,6 @@ class RecipeStore {
       religiousRestriction: recipeReligion,
     });
     return recipe || null;
-  }
-
-  // like and unlike methods
-  async incrementLikes(recipeId) {
-    await this.collection.updateOne(
-      { _id: new ObjectId(recipeId) },
-      { $inc: { totalLikes: 1 } }
-    );
-  }
-
-  async decrementLikes(recipeId) {
-    await this.collection.updateOne(
-      { _id: new ObjectId(recipeId) },
-      { $inc: { totalLikes: -1 } }
-    );
   }
 }
 

@@ -12,6 +12,7 @@ import { recipeStore } from "./store/recipes/recipeStore.js";
 import { reviewStore } from "./store/reviews/reviewStore.js";
 import { likeStore } from "./store/likes/likeStore.js";
 import { topRatedRecipeStore } from "./store/dashboard-recipes/topRatedRecipeStore.js";
+import { trendingRecipeStore } from "./store/dashboard-recipes/trendingRecipeStore.js";
 import { userResource } from "./resource/users/userResource.js";
 import { recipeResource } from "./resource/recipes/recipeResource.js";
 
@@ -46,6 +47,8 @@ connectDatabase()
     await reviewStore.init();
     await topRatedRecipeStore.init();
     await topRatedRecipeStore.refreshTopRatedRecipeCache();
+    await trendingRecipeStore.init();
+    await trendingRecipeStore.refreshTrendingRecipeCache();
     startRefreshJob();
 
     await app.use("/api/users", userResource.router);

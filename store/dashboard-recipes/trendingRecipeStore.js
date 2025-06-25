@@ -1,4 +1,5 @@
 import { getDatabase } from "../database.js";
+import { ObjectId } from "mongodb";
 
 class TrendingRecipeStore {
   // trending recipes means = most liked recipes within the past week
@@ -10,6 +11,7 @@ class TrendingRecipeStore {
     const db = getDatabase();
     this.collection = db.collection("trending-recipes");
     this.recipeCollection = db.collection("recipes");
+    this.recipeStatsCollection = db.collection("recipeStats");
     this.likesCollection = db.collection("likes");
   }
 
@@ -21,10 +23,16 @@ class TrendingRecipeStore {
     const pipeline = [
       // only reviews within the past week
       { $match: { createdAt: { $gte: pastWeek } } },
+      // convert recipeId from likes collection to object Id so it matches same type to _id in recipes collection
+      {
+        $addFields: {
+          recipeObjectId: { $toObjectId: "$recipeId" },
+        },
+      },
       // group by likes:
       {
         $group: {
-          _id: "$recipeId",
+          _id: "$recipeObjectId",
           totalLikes: { $sum: 1 },
         },
       },
@@ -47,31 +55,39 @@ class TrendingRecipeStore {
       {
         $project: {
           name: "$recipeDetails.name",
-          cuisineRegion: "$recipeDetails.cuisineRegion",
-          religiousRestriction: "$recipeDetails.religiousRestriction",
-          dietaryRestriction: "$recipeDetails.dietaryRestriction",
-          totalLikes: 1,
+          imageUrl: "$recipeDetails.imageUrl",
         },
       },
     ];
     const trendingRecipes = await this.likesCollection
       .aggregate(pipeline)
       .toArray();
+
     return trendingRecipes;
   }
 
   async refreshTrendingRecipeCache() {
     const trendingRecipes = await this.getTrendingRecipes();
-
     // insert a single cache document in trending-recipes collection, using a fixed id "cache" so theres only 1 cache document at all times
     const cacheDoc = {
       _id: "cache",
       updatedAt: new Date(),
-      recipes: topRatedRecipes,
+      recipes: trendingRecipes,
     };
+
+    await this.collection.updateOne(
+      { _id: "cache" },
+      { $set: cacheDoc },
+      { upsert: true }
+    );
+    return cacheDoc;
   }
 
-  async getCachedTrendingRecipes() {}
+  async getCachedTrendingRecipes() {
+    // fetch cached trending recipes stored in db
+    const cachedRecipes = await this.collection.findOne({ _id: "cache" });
+    return cachedRecipes?.recipes || [];
+  }
 }
 
 export const trendingRecipeStore = new TrendingRecipeStore();

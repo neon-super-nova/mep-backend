@@ -5,7 +5,7 @@ import { reviewService } from "../../service/reviews/reviewService.js";
 import { authenticateToken } from "../../middleware/authentication.js";
 import upload from "../../middleware/upload.js";
 import { cloudinaryUpload } from "../../config/cloudinary/cloudinaryUpload.js";
-import { isIdValid } from "../../config/validation/isIdValid.js";
+import { userIdCheck, recipeIdCheck } from "../../middleware/objectIdCheck.js";
 
 class RecipeResource {
   constructor() {
@@ -21,26 +21,30 @@ class RecipeResource {
     this.router.patch(
       "/:recipeId",
       authenticateToken,
+      recipeIdCheck,
       this.updateRecipe.bind(this)
     );
     this.router.delete(
       "/:recipeId",
       authenticateToken,
+      recipeIdCheck,
       this.deleteRecipe.bind(this)
     );
     this.router.post(
       "/:recipeId/image",
       authenticateToken,
+      recipeIdCheck,
       upload.single("image"),
       this.uploadImage.bind(this)
     );
 
     // dashboard recipes
     this.router.get("/top-rated", this.getTopRatedRecipes.bind(this));
+    this.router.get("/trending", this.getTrendingRecipes.bind(this));
 
     // all GETs for search filtering
     this.router.get("/", this.getAllRecipeIds.bind(this));
-    this.router.get("/:recipeId", this.getRecipeById.bind(this));
+    this.router.get("/:recipeId", recipeIdCheck, this.getRecipeById.bind(this));
     this.router.get("/name/:name", this.getRecipeByName.bind(this));
     this.router.get(
       "/ingredients/:ingredients",
@@ -67,11 +71,13 @@ class RecipeResource {
     this.router.post(
       "/:recipeId/like",
       authenticateToken,
+      recipeIdCheck,
       this.likeRecipe.bind(this)
     );
     this.router.post(
       "/:recipeId/unlike",
       authenticateToken,
+      recipeIdCheck,
       this.unlikeRecipe.bind(this)
     );
 
@@ -79,23 +85,31 @@ class RecipeResource {
     this.router.post(
       "/:recipeId/review",
       authenticateToken,
+      recipeIdCheck,
       this.addReview.bind(this)
     );
     this.router.delete(
       "/:recipeId/review",
       authenticateToken,
+      recipeIdCheck,
       this.deleteReview.bind(this)
     );
     this.router.patch(
       "/:recipeId/review",
       authenticateToken,
+      recipeIdCheck,
       this.updateReview.bind(this)
     );
     this.router.get(
       "/:recipeId/review-stats",
+      recipeIdCheck,
       this.getRecipeReviewStats.bind(this)
     );
-    this.router.get("/:recipeId/reviews", this.getAllRecipeReviews.bind(this));
+    this.router.get(
+      "/:recipeId/reviews",
+      recipeIdCheck,
+      this.getAllRecipeReviews.bind(this)
+    );
   }
 
   async addRecipe(req, res) {
@@ -271,9 +285,7 @@ class RecipeResource {
 
   async getRecipeById(req, res) {
     const recipeId = req.params.recipeId;
-    if (!isIdValid(recipeId)) {
-      return res.status(400).json({ error: "Invalid id" });
-    }
+
     try {
       const result = await this.recipeService.getRecipeById(recipeId);
       if (result?.error) {
@@ -390,6 +402,7 @@ class RecipeResource {
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
       }
+
       const result = await this.likeService.like(userId, recipeId);
 
       if (result.success) {
@@ -437,6 +450,7 @@ class RecipeResource {
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
       }
+
       const result = await this.reviewService.addReview(
         userId,
         recipeId,
@@ -463,6 +477,7 @@ class RecipeResource {
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
       }
+
       const result = await this.reviewService.deleteReview(userId, recipeId);
       if (result.success) {
         return res.status(200).json({ message: "Review deleted" });
@@ -470,7 +485,7 @@ class RecipeResource {
         return res.status(400).json({ error: result.error });
       }
     } catch (err) {
-      return res.status(500).json({ err: "Server error" });
+      return res.status(500).json({ error: "Server error" });
     }
   }
 
@@ -527,8 +542,9 @@ class RecipeResource {
   }
 
   async getAllRecipeReviews(req, res) {
+    const recipeId = req.params.recipeId;
+
     try {
-      const recipeId = req.params.recipeId;
       const result = await this.reviewService.getAllRecipeReviews(recipeId);
       if (result.error) {
         return res.status(404).json({ error: result.error });
@@ -547,6 +563,16 @@ class RecipeResource {
     } catch (err) {
       console.log(err);
       return res.status(500).json({ error: "Error occured" });
+    }
+  }
+
+  async getTrendingRecipes(req, res) {
+    try {
+      const trendingRecipes = await this.recipeService.getTrendingRecipes();
+      return res.status(200).json({ trendingRecipes });
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({ error: "Server error" });
     }
   }
 }

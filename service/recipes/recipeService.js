@@ -6,6 +6,7 @@ class RecipeService {
   constructor() {
     this.recipeStore = recipeStore;
     this.topRatedRecipeStore = topRatedRecipeStore;
+    this.trendingRecipeStore = trendingRecipeStore;
   }
 
   async addRecipe(newRecipe) {
@@ -126,7 +127,7 @@ class RecipeService {
   }
 
   async getTrendingRecipes() {
-    // return await
+    return await this.trendingRecipeStore.getCachedTrendingRecipes();
   }
 }
 

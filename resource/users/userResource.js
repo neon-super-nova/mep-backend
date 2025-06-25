@@ -7,7 +7,7 @@ import { generateToken } from "../../config/serverSessions/jwt.js";
 import upload from "../../middleware/upload.js";
 import { cloudinaryUpload } from "../../config/cloudinary/cloudinaryUpload.js";
 import { authenticateToken } from "../../middleware/authentication.js";
-import { isIdValid } from "../../config/validation/isIdValid.js";
+import { userIdCheck } from "../../middleware/objectIdCheck.js";
 
 class UserResource {
   constructor() {
@@ -47,14 +47,27 @@ class UserResource {
     );
 
     // user getters
-    this.router.get("/:userId", this.getUser.bind(this));
+    this.router.get("/:userId", userIdCheck, this.getUser.bind(this));
     this.router.get(
       "/:userId/recipe-count",
+      userIdCheck,
       this.getUserRecipeCount.bind(this)
     );
-    this.router.get("/:userId/like-count", this.getUserLikeCount.bind(this));
-    this.router.get("/:userId/global-like-count", this.getUserGlobalLikeCount);
-    this.router.get("/:userId/picture-url", this.getUserPictureUrl.bind(this));
+    this.router.get(
+      "/:userId/like-count",
+      userIdCheck,
+      this.getUserLikeCount.bind(this)
+    );
+    this.router.get(
+      "/:userId/global-like-count",
+      userIdCheck,
+      this.getUserGlobalLikeCount
+    );
+    this.router.get(
+      "/:userId/picture-url",
+      userIdCheck,
+      this.getUserPictureUrl.bind(this)
+    );
 
     // user-info
     this.router.post(
@@ -67,7 +80,11 @@ class UserResource {
       authenticateToken,
       this.updateUserInfo.bind(this)
     );
-    this.router.get("/user-info/:userId", this.getUserInfo.bind(this));
+    this.router.get(
+      "/user-info/:userId",
+      userIdCheck,
+      this.getUserInfo.bind(this)
+    );
   }
 
   async register(req, res) {
@@ -260,9 +277,7 @@ class UserResource {
   // user getters
   async getUser(req, res) {
     const userId = req.params.userId;
-    if (!isIdValid(userId)) {
-      return res.status(401).json({ error: "Invalid id" });
-    }
+
     try {
       const result = await userService.getUser(userId);
       if (result?.error) {
@@ -276,9 +291,7 @@ class UserResource {
 
   async getUserRecipeCount(req, res) {
     const userId = req.params.userId;
-    if (!isIdValid(userId)) {
-      return res.status(401).json({ error: "Invalid id" });
-    }
+
     try {
       const count = await userService.getUserRecipeCount(userId);
       if (count?.error) {
@@ -292,9 +305,7 @@ class UserResource {
 
   async getUserLikeCount(req, res) {
     const userId = req.params.userId;
-    if (!isIdValid(userId)) {
-      return res.status(401).json({ error: "Invalid id" });
-    }
+
     try {
       const count = await userService.getUserLikeCount(userId);
       if (count?.error) {
@@ -308,9 +319,7 @@ class UserResource {
 
   async getUserGlobalLikeCount(req, res) {
     const userId = req.params.userId;
-    if (!isIdValid(userId)) {
-      return res.status(401).json({ error: "Invalid id" });
-    }
+
     try {
       const globalLikes = await userService.getUserGlobalLikeCount(userId);
       if (globalLikes?.error) {
@@ -324,9 +333,7 @@ class UserResource {
 
   async getUserPictureUrl(req, res) {
     const userId = req.params.userId;
-    if (!isIdValid(userId)) {
-      return res.status(401).json({ error: "Invalid id" });
-    }
+
     try {
       const url = await userService.getUserPictureUrl(userId);
       if (url?.error) {
@@ -415,9 +422,7 @@ class UserResource {
   // user-info getters
   async getUserInfo(req, res) {
     const userId = req.params.userId;
-    if (!isIdValid(userId)) {
-      return res.status(401).json({ error: "Invalid id" });
-    }
+
     try {
       const result = await userInfoService.getUserInfo(userId);
       if (result?.error) {

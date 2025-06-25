@@ -10,7 +10,7 @@ class LikeStore {
   init() {
     const db = getDatabase();
     this.collection = db.collection(likeCollection);
-    this.recipeStore = recipeStore;
+    this.recipeStatsCollection = db.collection("recipeStats");
   }
 
   async checkForLike(userId, recipeId) {
@@ -29,7 +29,11 @@ class LikeStore {
         recipeId: recipeId,
         createdAt: new Date(),
       });
-      await this.recipeStore.incrementLikes(recipeId);
+      await this.recipeStatsCollection.updateOne(
+        { recipeId },
+        { $inc: { likeCount: 1 } },
+        { upsert: true }
+      );
     } catch (err) {
       throw err;
     }
@@ -42,7 +46,10 @@ class LikeStore {
         throw new Error("Cannot unlike a recipe that wasn't liked before");
       }
       await this.collection.deleteOne({ userId, recipeId });
-      await this.recipeStore.decrementLikes(recipeId);
+      await this.recipeStatsCollection.updateOne(
+        { recipeId },
+        { $inc: { likeCount: -1 } }
+      );
     } catch (error) {
       throw error;
     }

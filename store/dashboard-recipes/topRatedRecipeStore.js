@@ -95,7 +95,6 @@ class TopRatedRecipeStore {
         dietaryRestriction: recipe.dietaryRestriction,
         proteinChoice: recipe.proteinChoice,
         imageUrl: recipe.imageUrl,
-        // can add return other attributes of recipe according to ui needs
       };
     });
 
@@ -126,7 +125,7 @@ class TopRatedRecipeStore {
   }
 
   async getCachedTopRatedRecipes() {
-    // fetch cached trending recipes stored in db
+    // fetch cached top rated recipes stored in db
     const cacheRecipes = await this.collection.findOne({ _id: "cache" });
     return cacheRecipes?.recipes || [];
   }
