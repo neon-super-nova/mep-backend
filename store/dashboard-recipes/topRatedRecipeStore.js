@@ -90,6 +90,7 @@ class TopRatedRecipeStore {
       return {
         name: recipe.name,
         averageRating: recipeStat?.averageRating ?? 0,
+        description: recipe.description,
         cuisineRegion: recipe.cuisineRegion,
         religiousRestriction: recipe.religiousRestriction,
         dietaryRestriction: recipe.dietaryRestriction,

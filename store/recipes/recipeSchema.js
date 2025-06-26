@@ -6,6 +6,11 @@ export const recipeCollection = "recipes";
 export const recipeSchema = {
   userId: ObjectId,
   name: String,
+  description: {
+    type: String,
+    required: true,
+    maxlength: 300,
+  },
   prepTime: Number,
   cookTime: Number,
   totalTime: Number,

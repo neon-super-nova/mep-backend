@@ -115,6 +115,7 @@ class RecipeResource {
   async addRecipe(req, res) {
     const {
       name,
+      description,
       prepTime,
       cookTime,
       servings,
@@ -132,10 +133,17 @@ class RecipeResource {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
+    if (description && description.length > 300) {
+      return res
+        .status(400)
+        .json({ error: "Description must have a maximum of 300 characters." });
+    }
+
     try {
       const recipe = {
         userId,
         name,
+        description,
         prepTime,
         cookTime,
         servings,
@@ -165,10 +173,17 @@ class RecipeResource {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
+      if (description && description.length > 300) {
+        return res.status(400).json({
+          error: "Description must have a maximum of 300 characters.",
+        });
+      }
+
       const patchFields = req.body;
 
       const allowedFields = [
         "name",
+        "description",
         "prepTime",
         "cookTime",
         "servings",
