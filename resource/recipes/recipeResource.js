@@ -43,7 +43,7 @@ class RecipeResource {
     this.router.get("/trending", this.getTrendingRecipes.bind(this));
 
     // all GETs for search filtering
-    this.router.get("/", this.getAllRecipeIds.bind(this));
+    this.router.get("/", this.getAllRecipes.bind(this));
     this.router.get("/:recipeId", recipeIdCheck, this.getRecipeById.bind(this));
     this.router.get("/name/:name", this.getRecipeByName.bind(this));
     this.router.get(
@@ -286,14 +286,15 @@ class RecipeResource {
   }
   // all GETs for search filtering
 
-  async getAllRecipeIds(req, res) {
+  async getAllRecipes(req, res) {
     try {
-      const recipes = await this.recipeService.getAllRecipeIds();
+      const recipes = await this.recipeService.getAllRecipes();
       if (recipes?.error) {
         return res.status(400).json({ error: recipes.error });
       }
       return res.status(200).json({ recipes });
     } catch (err) {
+      console.log(err);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -574,7 +575,7 @@ class RecipeResource {
   async getTopRatedRecipes(req, res) {
     try {
       const topRatedRecipes = await this.recipeService.getTopRatedRecipes();
-      return res.status(200).json(topRatedRecipes);
+      return res.status(200).json({ topRatedRecipes });
     } catch (err) {
       console.log(err);
       return res.status(500).json({ error: "Error occured" });

@@ -68,6 +68,11 @@ class UserResource {
       userIdCheck,
       this.getUserPictureUrl.bind(this)
     );
+    this.router.get(
+      "/:userId/recipes",
+      userIdCheck,
+      this.getUserRecipes.bind(this)
+    );
 
     // user-info
     this.router.post(
@@ -342,6 +347,20 @@ class UserResource {
           .json({ error: url.error || "Error fetching url" });
       }
       return res.status(200).json({ pictureUrl: url });
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getUserRecipes(req, res) {
+    const userId = req.params.userId;
+
+    try {
+      const recipes = await userService.getUserRecipes(userId);
+      if (recipes?.error) {
+        return res.status(400).json({ error: recipes.error });
+      }
+      return res.status(200).json(recipes);
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }

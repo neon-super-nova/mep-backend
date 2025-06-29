@@ -93,14 +93,45 @@ class RecipeStore {
 
   // all GET methods for filtering
 
-  async getAllRecipeIds() {
-    const recipes = await this.collection
-      .find()
-      .project({
-        _id: 1,
-        name: 1,
-      })
-      .toArray();
+  async getAllRecipes() {
+    const pipeline = [
+      {
+        $lookup: {
+          from: "users",
+          let: { userIdStr: "$userId" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$_id", { $toObjectId: "$$userIdStr" }],
+                },
+              },
+            },
+            {
+              $project: {
+                firstName: 1,
+                lastName: 1,
+              },
+            },
+          ],
+          as: "recipeAuthor",
+        },
+      },
+      {
+        $unwind: "$recipeAuthor",
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          imageUrl: 1,
+          authorFirstName: "$recipeAuthor.firstName",
+          authorLastName: "$recipeAuthor.lastName",
+        },
+      },
+    ];
+
+    const recipes = await this.collection.aggregate(pipeline).toArray();
     return recipes;
   }
 

@@ -196,6 +196,17 @@ class UserService {
       throw err;
     }
   }
+
+  async getUserRecipes(userId) {
+    try {
+      return await this.userStore.getUserRecipes(userId);
+    } catch (err) {
+      if (err.message === "USER_NOT_FOUND") {
+        return { error: "User not found" };
+      }
+      throw err;
+    }
+  }
 }
 
 export const userService = new UserService();

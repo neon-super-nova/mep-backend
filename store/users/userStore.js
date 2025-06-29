@@ -235,6 +235,19 @@ class UserStore {
     const url = user.pictureUrl;
     return url;
   }
+
+  async getUserRecipes(userId) {
+    const user = await this.collection.findOne({ _id: new ObjectId(userId) });
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+
+    const recipes = await this.recipeCollection
+      .find({ userId: userId })
+      .toArray();
+
+    return recipes || [];
+  }
 }
 
 export const userStore = new UserStore();
