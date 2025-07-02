@@ -120,9 +120,13 @@ class UserResource {
       const { token } = req.params;
       const result = await userService.verifyEmail(token);
       if (result.success) {
-        return res.status(200).send("Email successfully verified!");
+        return res
+          .status(200)
+          .send({ success: "Email successfully verified!" });
       } else {
-        return res.status(400).send("Invalid or expired verification link.");
+        return res
+          .status(400)
+          .send({ error: "Invalid or expired verification link." });
       }
     } catch (error) {
       console.error("Verify email error:", error);
