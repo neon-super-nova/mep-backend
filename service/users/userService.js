@@ -71,11 +71,16 @@ class UserService {
   }
 
   async patchUser(userId, patchFields) {
-    const update = await this.userStore.patchUser(userId, patchFields);
-    if (update) {
-      return { success: true };
-    } else {
-      return { success: false, message: "No changes made or user not found" };
+    try {
+      const update = await this.userStore.patchUser(userId, patchFields);
+      if (update) {
+        return { success: true };
+      }
+    } catch (err) {
+      if (err.message === "INVALID_USERNAME") {
+        return { error: "Username already taken" };
+      }
+      return { error: "No changes made" };
     }
   }
 
@@ -129,6 +134,7 @@ class UserService {
 
     return { success: true, token, user: newUser };
   }
+
   // adding user picture
   async updateUserPictureUrl(userId, pictureUrl) {
     try {

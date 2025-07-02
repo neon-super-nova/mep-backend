@@ -52,12 +52,61 @@ class RecipeService {
     }
   }
 
-  // all GET methods for filtering
-
   async getAllRecipes() {
     try {
       return await this.recipeStore.getAllRecipes();
     } catch (err) {
+      throw err;
+    }
+  }
+
+  // all GET methods for filtering
+
+  async searchRecipes(filters) {
+    const queryFilters = {};
+    if (filters.name) {
+      queryFilters.name = new RegExp(filters.name, "i");
+    }
+    if (filters.totalTime) {
+      queryFilters.totalTime = { $lte: filters.totalTime };
+    }
+    if (filters.servings) {
+      queryFilters.servings = { $lte: filters.servings };
+    }
+    if (filters.ingredients) {
+      const ingredientList = filters.ingredients
+        .split(",")
+        .map((i) => i.trim())
+        .filter(Boolean);
+
+      queryFilters.ingredients = {
+        $all: ingredientList.map((ingredient) => new RegExp(ingredient, "i")),
+      };
+    }
+    if (filters.cuisineRegion) {
+      queryFilters.cuisineRegion = new RegExp(filters.cuisineRegion, "i");
+    }
+    if (filters.proteinChoice) {
+      queryFilters.proteinChoice = new RegExp(filters.proteinChoice, "i");
+    }
+    if (filters.dietaryRestriction) {
+      queryFilters.dietaryRestriction = new RegExp(
+        filters.dietaryRestriction,
+        "i"
+      );
+    }
+    if (filters.religiousRestriction) {
+      queryFilters.religiousRestriction = new RegExp(
+        filters.religiousRestriction,
+        "i"
+      );
+    }
+    try {
+      return await this.recipeStore.searchRecipes(queryFilters);
+    } catch (err) {
+      if (err.message === "RECIPE_NOT_FOUND") {
+        return { error: "Recipes not found" };
+      }
       throw err;
     }
   }

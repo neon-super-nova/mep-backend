@@ -43,6 +43,7 @@ class RecipeResource {
     this.router.get("/trending", this.getTrendingRecipes.bind(this));
 
     // all GETs for search filtering
+    this.router.get("/search", this.searchRecipes.bind(this));
     this.router.get("/", this.getAllRecipes.bind(this));
     this.router.get("/:recipeId", recipeIdCheck, this.getRecipeById.bind(this));
     this.router.get("/name/:name", this.getRecipeByName.bind(this));
@@ -284,7 +285,6 @@ class RecipeResource {
       return res.status(500).json({ error: "Server error" });
     }
   }
-  // all GETs for search filtering
 
   async getAllRecipes(req, res) {
     try {
@@ -299,9 +299,48 @@ class RecipeResource {
     }
   }
 
+  // all GETs for search filtering
+
+  async searchRecipes(req, res) {
+    try {
+      const {
+        name,
+        totalTime,
+        servings,
+        ingredients,
+        cuisineRegion,
+        proteinChoice,
+        dietaryRestriction,
+        religiousRestriction,
+      } = req.query;
+
+      const filters = {};
+      if (name) filters.name = name;
+      if (totalTime) filters.totalTime = Number(totalTime);
+      if (servings) filters.servings = Number(servings);
+      if (ingredients) filters.ingredients = ingredients;
+      if (cuisineRegion) filters.cuisineRegion = cuisineRegion;
+      if (proteinChoice) filters.proteinChoice = proteinChoice;
+      if (dietaryRestriction) filters.dietaryRestriction = dietaryRestriction;
+      if (religiousRestriction)
+        filters.religiousRestriction = religiousRestriction;
+
+      const recipes = await this.recipeService.searchRecipes(filters);
+
+      if (recipes.length > 0) {
+        return res.status(200).json({ recipes: recipes });
+      } else {
+        return res
+          .status(400)
+          .json({ error: "No recipes found under such filters" });
+      }
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
   async getRecipeById(req, res) {
     const recipeId = req.params.recipeId;
-
     try {
       const result = await this.recipeService.getRecipeById(recipeId);
       if (result?.error) {

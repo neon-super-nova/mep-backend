@@ -216,12 +216,10 @@ class UserResource {
           .status(200)
           .json({ message: "Updates were successfully made" });
       } else {
-        return res
-          .status(400)
-          .json({ error: result.message || "Update failed" });
+        return res.status(400).json({ error: result.error || "Update failed" });
       }
     } catch (error) {
-      console.error("Update user error:", error);
+      console.error(error);
       return res.status(500).json({ error: "Server error" });
     }
   }

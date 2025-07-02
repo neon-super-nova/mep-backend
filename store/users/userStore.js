@@ -124,6 +124,14 @@ class UserStore {
 
   async patchUser(userId, patchFields) {
     const objectId = ObjectId.createFromHexString(userId);
+    if (patchFields.username) {
+      const existingUsernameCheck = await this.findByUsername(
+        patchFields.username
+      );
+      if (existingUsernameCheck) {
+        throw new Error("INVALID_USERNAME");
+      }
+    }
     const result = await this.collection.updateOne(
       { _id: objectId },
       { $set: patchFields }

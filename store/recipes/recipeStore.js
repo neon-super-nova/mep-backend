@@ -91,8 +91,6 @@ class RecipeStore {
     }
   }
 
-  // all GET methods for filtering
-
   async getAllRecipes() {
     const pipeline = [
       {
@@ -132,6 +130,57 @@ class RecipeStore {
     ];
 
     const recipes = await this.collection.aggregate(pipeline).toArray();
+    return recipes;
+  }
+
+  // all GET methods for filtering
+
+  async searchRecipes(queryFilters) {
+    const pipeline = [];
+    if (Object.keys(queryFilters).length > 0) {
+      pipeline.push({ $match: queryFilters });
+    }
+
+    pipeline.push({
+      $lookup: {
+        from: "users",
+        let: { userIdStr: "$userId" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $eq: ["$_id", { $toObjectId: "$$userIdStr" }],
+              },
+            },
+          },
+          {
+            $project: {
+              firstName: 1,
+              lastName: 1,
+            },
+          },
+        ],
+        as: "recipeAuthor",
+      },
+    });
+
+    pipeline.push({ $unwind: "$recipeAuthor" });
+
+    pipeline.push({
+      $project: {
+        _id: 1,
+        name: 1,
+        imageUrl: 1,
+        authorFirstName: "$recipeAuthor.firstName",
+        authorLastName: "$recipeAuthor.lastName",
+      },
+    });
+
+    const recipes = await this.collection.aggregate(pipeline).toArray();
+
+    if (recipes.length === 0) {
+      throw new Error("RECIPE_NOT_FOUND");
+    }
     return recipes;
   }
 

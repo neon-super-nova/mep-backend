@@ -16,7 +16,8 @@ export async function sendVerificationEmail(to, token) {
     subject: "Verify Your Email Address",
     html: `<p>Please verify your email address by clicking the link below:</p>
           <a href="${verificationURL}">${verificationURL}</a>
-          <p>Use the following verification key if prompted:</p>
+          <p>Use the following verification token. Do not share it with anyone.</p>
+          <p>Token expires in 1 hour.</p>
           <p><strong>${token}</strong></p>`,
   };
   await transporter.sendMail(email);
