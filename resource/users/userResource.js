@@ -446,6 +446,7 @@ class UserResource {
 
     try {
       const result = await userInfoService.getUserInfo(userId);
+      console.log(result.error);
       if (result?.error) {
         return res.status(400).json({ error: result.error || "Error" });
       }

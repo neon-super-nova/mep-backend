@@ -53,6 +53,9 @@ class UserInfoService {
       if (err.message === "USER_NOT_FOUND") {
         return { error: "User not found" };
       }
+      if (err.message === "EMPTY_USER_INFO") {
+        return { error: "Empty user info" };
+      }
       throw err;
     }
   }

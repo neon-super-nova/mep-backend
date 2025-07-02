@@ -73,6 +73,11 @@ class UserInfoStore {
     if (!findUser) {
       throw new Error("USER_NOT_FOUND");
     }
+    const checkForEmptyInfo = await this.checkForPreviousInfo(userId);
+    if (!checkForEmptyInfo) {
+      throw new Error("EMPTY_USER_INFO");
+    }
+
     const result = await this.collection.findOne(
       { userId },
       {
