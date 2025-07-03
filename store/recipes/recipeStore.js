@@ -123,8 +123,9 @@ class RecipeStore {
           _id: 1,
           name: 1,
           imageUrl: 1,
-          authorFirstName: "$recipeAuthor.firstName",
-          authorLastName: "$recipeAuthor.lastName",
+          authorName: {
+            $concat: ["$recipeAuthor.firstName", " ", "$recipeAuthor.lastName"],
+          },
         },
       },
     ];
@@ -171,8 +172,9 @@ class RecipeStore {
         _id: 1,
         name: 1,
         imageUrl: 1,
-        authorFirstName: "$recipeAuthor.firstName",
-        authorLastName: "$recipeAuthor.lastName",
+        authorName: {
+          $concat: ["$recipeAuthor.firstName", " ", "$recipeAuthor.lastName"],
+        },
       },
     });
 
