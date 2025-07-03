@@ -129,7 +129,6 @@ class UserResource {
           .send({ error: "Invalid or expired verification link." });
       }
     } catch (error) {
-      console.error("Verify email error:", error);
       return res.status(500).send("Server error");
     }
   }
@@ -166,7 +165,6 @@ class UserResource {
         return res.status(404).json({ error: "Email not found" });
       }
     } catch (error) {
-      console.error("Forgot password error:", error);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -188,7 +186,6 @@ class UserResource {
         return res.status(400).json({ error: "Invalid or expired token" });
       }
     } catch (error) {
-      console.error("Reset password error:", error);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -225,7 +222,6 @@ class UserResource {
   }
 
   async logout(req, res) {
-    // You can add logic here if you use sessions, JWT blacklist, etc.
     return res.status(200).json({ message: "Logout successful" });
   }
 

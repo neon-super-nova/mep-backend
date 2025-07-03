@@ -250,8 +250,20 @@ class UserStore {
       throw new Error("USER_NOT_FOUND");
     }
 
+    const name = user.firstName + user.lastName;
+
     const recipes = await this.recipeCollection
-      .find({ userId: userId })
+      .aggregate([
+        { $match: { userId: userId } },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            imageUrl: 1,
+            userFullName: name,
+          },
+        },
+      ])
       .toArray();
 
     return recipes || [];
