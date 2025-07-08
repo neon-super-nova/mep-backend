@@ -88,6 +88,7 @@ class TopRatedRecipeStore {
         (stat) => stat.recipeId === recipe._id.toString()
       );
       return {
+        id: recipe._id,
         name: recipe.name,
         averageRating: recipeStat?.averageRating ?? 0,
         description: recipe.description,

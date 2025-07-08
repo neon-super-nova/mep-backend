@@ -47,7 +47,8 @@ class UserInfoStore {
       favoriteDish,
       dietaryRestriction,
     };
-    await this.collection.insertOne(userInfoToAdd);
+    const id = ObjectId(userId);
+    await this.collection.insertOne({ userInfoToAdd });
   }
 
   async updateUserInfo(userId, fieldsToUpdate) {

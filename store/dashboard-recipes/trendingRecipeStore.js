@@ -18,7 +18,7 @@ class TrendingRecipeStore {
   async getTrendingRecipes() {
     const now = new Date();
     const pastWeek = new Date(now);
-    pastWeek.setDate(pastWeek.getDate() - 7);
+    pastWeek.setDate(pastWeek.getDate() - 28); // for now 28
 
     const pipeline = [
       // only reviews within the past week
@@ -56,6 +56,7 @@ class TrendingRecipeStore {
         $project: {
           name: "$recipeDetails.name",
           imageUrl: "$recipeDetails.imageUrl",
+          description: "$recipeDetails.description",
         },
       },
     ];
