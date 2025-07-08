@@ -150,7 +150,6 @@ class UserResource {
         return res.status(401).json({ error: result.message });
       }
     } catch (error) {
-      console.error("Login error:", error);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -216,7 +215,6 @@ class UserResource {
         return res.status(400).json({ error: result.error || "Update failed" });
       }
     } catch (error) {
-      console.error(error);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -241,7 +239,6 @@ class UserResource {
 
       return res.redirect(`${process.env.URL_REDIRECT}?token=${token}`);
     } catch (error) {
-      console.error("Google OAuth callback error:", error);
       return res.status(500).json({ error: "OAuth callback error" });
     }
   }
@@ -392,7 +389,6 @@ class UserResource {
           .json({ error: result.error || "User not found" });
       }
     } catch (err) {
-      console.log(err);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -448,7 +444,6 @@ class UserResource {
       }
       return res.status(200).json({ userInfo: result });
     } catch (err) {
-      console.log(err);
       return res.status(500).json({ error: "Server error" });
     }
   }

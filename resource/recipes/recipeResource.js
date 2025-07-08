@@ -246,7 +246,6 @@ class RecipeResource {
         return res.status(404).json({ error: result.message });
       }
     } catch (error) {
-      console.error(error);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -294,7 +293,6 @@ class RecipeResource {
       }
       return res.status(200).json({ recipes });
     } catch (err) {
-      console.log(err);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -363,7 +361,6 @@ class RecipeResource {
         res.status(404).json({ error: "Recipe not found" });
       }
     } catch (error) {
-      console.error(error);
       res.status(500).json({ error: "Server error" });
     }
   }
@@ -616,7 +613,6 @@ class RecipeResource {
       const topRatedRecipes = await this.recipeService.getTopRatedRecipes();
       return res.status(200).json({ topRatedRecipes });
     } catch (err) {
-      console.log(err);
       return res.status(500).json({ error: "Error occured" });
     }
   }
@@ -626,7 +622,6 @@ class RecipeResource {
       const trendingRecipes = await this.recipeService.getTrendingRecipes();
       return res.status(200).json({ trendingRecipes });
     } catch (err) {
-      console.log(err);
       return res.status(500).json({ error: "Server error" });
     }
   }
