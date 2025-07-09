@@ -49,6 +49,7 @@ class UserStore {
       verificationToken: newUser.verificationToken,
       firstName: newUser.firstName || "",
       lastName: newUser.lastName || "",
+      createdAt: new Date(),
     };
     await this.collection.insertOne(userData);
   }
@@ -159,6 +160,7 @@ class UserStore {
       googleRefreshToken: profile.googleRefreshToken, // changes
       oauthProvider: "google",
       verified: true,
+      createdAt: new Date(),
     };
     const insertResult = await this.collection.insertOne(newUser);
     return { ...newUser, _id: insertResult.insertedId };
@@ -189,6 +191,7 @@ class UserStore {
       username: user.username,
       firstName: user.firstName,
       lastName: user.lastName,
+      createdAt: user.createdAt,
     };
   }
 
