@@ -22,6 +22,10 @@ export function configureGooglePassport() {
               name: profile.displayName,
               googleToken: accessToken,
               googleRefreshToken: refreshToken,
+              pictureUrl:
+                profile.photos && profile.photos.length > 0
+                  ? profile.photos[0].value
+                  : "",
             });
           } else {
             if (user.googleToken !== accessToken) {

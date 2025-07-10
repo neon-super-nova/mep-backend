@@ -156,11 +156,12 @@ class UserStore {
       email: profile.email,
       firstName: profile.name?.split(" ")[0] || "",
       lastName: profile.name?.split(" ")[1] || "",
-      googleToken: profile.googleToken, // changes
-      googleRefreshToken: profile.googleRefreshToken, // changes
+      googleToken: profile.googleToken,
+      googleRefreshToken: profile.googleRefreshToken,
       oauthProvider: "google",
       verified: true,
       createdAt: new Date(),
+      pictureUrl: profile.pictureUrl || "",
     };
     const insertResult = await this.collection.insertOne(newUser);
     return { ...newUser, _id: insertResult.insertedId };
