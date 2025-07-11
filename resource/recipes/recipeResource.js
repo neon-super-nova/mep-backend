@@ -102,9 +102,9 @@ class RecipeResource {
       this.updateReview.bind(this)
     );
     this.router.get(
-      "/:recipeId/review-stats",
+      "/:recipeId/recipe-stats",
       recipeIdCheck,
-      this.getRecipeReviewStats.bind(this)
+      this.getRecipeStats.bind(this)
     );
     this.router.get(
       "/:recipeId/reviews",
@@ -579,7 +579,7 @@ class RecipeResource {
     }
   }
 
-  async getRecipeReviewStats(req, res) {
+  async getRecipeStats(req, res) {
     try {
       const recipeId = req.params.recipeId;
       const result = await this.reviewService.getRecipeStats(recipeId);

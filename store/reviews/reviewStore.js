@@ -160,9 +160,12 @@ class ReviewStore {
     if (!review) {
       throw new Error("Review not found");
     }
-    const averageRating = review.averageRating;
-    const reviewCount = review.reviewCount;
-    return { averageRating, reviewCount };
+    return {
+      recipeId: review.recipeId,
+      averageReview: review.averageRating,
+      reviewCount: review.reviewCount,
+      likeCount: review.likeCount,
+    };
   }
 
   async getAllRecipeReviews(recipeId) {
