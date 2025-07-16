@@ -55,7 +55,7 @@ class TrendingRecipeStore {
       {
         $project: {
           name: "$recipeDetails.name",
-          imageUrl: "$recipeDetails.imageUrl",
+          imageUrls: "$recipeDetails.imageUrls",
           description: "$recipeDetails.description",
         },
       },

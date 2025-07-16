@@ -16,17 +16,20 @@ class RecipeStore {
       userId: newRecipe.userId,
       name: newRecipe.name,
       description: newRecipe.description,
-      prepTime: Number(newRecipe.prepTime),
-      cookTime: Number(newRecipe.cookTime),
-      totalTime: Number(newRecipe.prepTime + newRecipe.cookTime),
-      servings: Number(newRecipe.servings),
+      prepTime: newRecipe.prepTime,
+      cookTime: newRecipe.cookTime,
+      totalTime: newRecipe.prepTime + newRecipe.cookTime,
+      servings: newRecipe.servings,
       ingredients: newRecipe.ingredients,
       instructions: newRecipe.instructions,
-      imageUrl: newRecipe.imageUrl,
+      imageUrls: newRecipe.imageUrls,
       cuisineRegion: newRecipe.cuisineRegion,
+      cuisineSubregion: newRecipe.cuisineSubregion,
       proteinChoice: newRecipe.proteinChoice,
       dietaryRestriction: newRecipe.dietaryRestriction,
       religiousRestriction: newRecipe.religiousRestriction,
+      authorNotes: newRecipe.authorNotes,
+      equipment: newRecipe.equipment,
       createdAt: new Date(),
     });
 
@@ -70,27 +73,6 @@ class RecipeStore {
     return result.deletedCount > 0;
   }
 
-  async updateRecipeImage(userId, recipeId, imageUrl) {
-    try {
-      const id = new ObjectId(recipeId);
-
-      const foundRecipe = await this.collection.findOne({ _id: id, userId });
-
-      if (!foundRecipe) {
-        throw new Error("RECIPE_NOT_FOUND_OR_FORBIDDEN");
-      }
-
-      const result = await this.collection.findOneAndUpdate(
-        { _id: id, userId },
-        { $set: { imageUrl } },
-        { returnDocument: "after" }
-      );
-      return result;
-    } catch (err) {
-      throw err;
-    }
-  }
-
   async getAllRecipes() {
     const pipeline = [
       {
@@ -122,7 +104,7 @@ class RecipeStore {
         $project: {
           _id: 1,
           name: 1,
-          imageUrl: 1,
+          imageUrls: 1,
           authorName: {
             $concat: ["$recipeAuthor.firstName", " ", "$recipeAuthor.lastName"],
           },
@@ -171,7 +153,7 @@ class RecipeStore {
       $project: {
         _id: 1,
         name: 1,
-        imageUrl: 1,
+        imageUrls: 1,
         authorName: {
           $concat: ["$recipeAuthor.firstName", " ", "$recipeAuthor.lastName"],
         },
@@ -199,46 +181,6 @@ class RecipeStore {
     return await this.collection
       .find({ userId: new ObjectId(String(userId)) })
       .toArray();
-  }
-
-  async getRecipeByName(recipeName) {
-    const recipe = await this.collection.findOne({ name: recipeName });
-    return recipe || null;
-  }
-
-  async getRecipeByIngredients(recipeIngredient) {
-    const recipe = await this.collection.findOne({
-      ingredients: recipeIngredient,
-    });
-    return recipe || null;
-  }
-
-  async getRecipeByCuisineRegion(recipeRegion) {
-    const recipe = await this.collection.findOne({
-      cuisineRegion: recipeRegion,
-    });
-    return recipe || null;
-  }
-
-  async getRecipeByProteinChoice(recipeProtein) {
-    const recipe = await this.collection.findOne({
-      proteinChoice: recipeProtein,
-    });
-    return recipe || null;
-  }
-
-  async getRecipeByDietaryRestriction(recipeDiet) {
-    const recipe = await this.collection.findOne({
-      dietaryRestriction: recipeDiet,
-    });
-    return recipe || null;
-  }
-
-  async getRecipeByReligiousRestriction(recipeReligion) {
-    const recipe = await this.collection.findOne({
-      religiousRestriction: recipeReligion,
-    });
-    return recipe || null;
   }
 }
 

@@ -254,7 +254,8 @@ class UserStore {
       throw new Error("USER_NOT_FOUND");
     }
 
-    const name = user.firstName + user.lastName;
+    const name = user.firstName + " " + user.lastName;
+    const username = user.username.toLowerCase();
 
     const recipes = await this.recipeCollection
       .aggregate([
@@ -263,8 +264,9 @@ class UserStore {
           $project: {
             _id: 1,
             name: 1,
-            imageUrl: 1,
+            imageUrls: 1,
             userFullName: name,
+            username: username,
           },
         },
       ])

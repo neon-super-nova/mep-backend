@@ -1,5 +1,4 @@
 import { ObjectId } from "mongodb";
-import mongoose from "mongoose";
 
 export const recipeCollection = "recipes";
 
@@ -17,7 +16,13 @@ export const recipeSchema = {
   servings: Number,
   ingredients: [String],
   instructions: [String],
-  imageUrl: { type: String, required: false },
+  imageUrls: {
+    type: [String],
+    required: true,
+    validator: (arr) => arr.length >= 0 && arr.length <= 3,
+    message:
+      "You must provide at least 1 imageUrl or a maximum of 3 image URLs.",
+  },
   cuisineRegion: {
     type: String,
     enum: [
@@ -35,6 +40,7 @@ export const recipeSchema = {
     ],
     required: true,
   },
+  cuisineSubregion: { type: String, required: false },
   proteinChoice: {
     type: String,
     enum: [
@@ -73,8 +79,7 @@ export const recipeSchema = {
     required: false,
     default: "None",
   },
-  totalLikes: { type: Number, default: 0 },
-  totalReviews: { type: Number, default: 0 },
-  averageReviewRating: { type: Number, default: 0 },
+  authorNotes: { type: [String], required: false },
+  equipment: { type: [String], required: false },
   createdAt: { type: Date, default: Date.now },
 };

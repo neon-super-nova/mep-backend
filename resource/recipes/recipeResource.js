@@ -5,7 +5,7 @@ import { reviewService } from "../../service/reviews/reviewService.js";
 import { authenticateToken } from "../../middleware/authentication.js";
 import upload from "../../middleware/upload.js";
 import { cloudinaryUpload } from "../../config/cloudinary/cloudinaryUpload.js";
-import { userIdCheck, recipeIdCheck } from "../../middleware/objectIdCheck.js";
+import { recipeIdCheck } from "../../middleware/objectIdCheck.js";
 
 class RecipeResource {
   constructor() {
@@ -17,7 +17,12 @@ class RecipeResource {
   }
 
   initRoutes() {
-    this.router.post("/", authenticateToken, this.addRecipe.bind(this));
+    this.router.post(
+      "/",
+      authenticateToken,
+      upload.array("images", 3),
+      this.addRecipe.bind(this)
+    );
     this.router.patch(
       "/:recipeId",
       authenticateToken,
@@ -30,13 +35,6 @@ class RecipeResource {
       recipeIdCheck,
       this.deleteRecipe.bind(this)
     );
-    this.router.post(
-      "/:recipeId/image",
-      authenticateToken,
-      recipeIdCheck,
-      upload.single("image"),
-      this.uploadImage.bind(this)
-    );
 
     // dashboard recipes
     this.router.get("/top-rated", this.getTopRatedRecipes.bind(this));
@@ -46,27 +44,6 @@ class RecipeResource {
     this.router.get("/search", this.searchRecipes.bind(this));
     this.router.get("/", this.getAllRecipes.bind(this));
     this.router.get("/:recipeId", recipeIdCheck, this.getRecipeById.bind(this));
-    this.router.get("/name/:name", this.getRecipeByName.bind(this));
-    this.router.get(
-      "/ingredients/:ingredients",
-      this.getRecipeByIngredients.bind(this)
-    );
-    this.router.get(
-      "/cuisine/:cuisineRegion",
-      this.getRecipeByCuisineRegion.bind(this)
-    );
-    this.router.get(
-      "/protein/:proteinChoice",
-      this.getRecipeByProteinChoice.bind(this)
-    );
-    this.router.get(
-      "/dietary-restriction/:dietaryRestriction",
-      this.getRecipeByDietaryRestriction.bind(this)
-    );
-    this.router.get(
-      "/religious-restriction/:religiousRestriction",
-      this.getRecipeByReligiousRestriction.bind(this)
-    );
 
     // likes
     this.router.post(
@@ -122,14 +99,19 @@ class RecipeResource {
       servings,
       ingredients,
       instructions,
-      imageUrl,
       cuisineRegion,
+      cuisineSubregion,
       proteinChoice,
       dietaryRestriction,
       religiousRestriction,
+      authorNotes,
+      equipment,
     } = req.body;
 
     const userId = req.user?.userId;
+
+    const images = req.files;
+
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
@@ -141,26 +123,58 @@ class RecipeResource {
     }
 
     try {
+      let imageUrls = [];
+
+      if (images.length > 0) {
+        const uploadResults = await Promise.all(
+          images.map((file) => cloudinaryUpload(file.buffer, "recipes"))
+        );
+        imageUrls = uploadResults.map((result) => result.secure_url);
+      }
+
+      const safeParse = (input, fieldName = "") => {
+        if (!input) return [];
+
+        if (Array.isArray(input)) return input;
+
+        if (typeof input === "string") {
+          try {
+            return JSON.parse(input);
+          } catch (e) {
+            console.error(`Invalid JSON in field "${fieldName}":`, input);
+            throw new Error(`Invalid JSON format in "${fieldName}"`);
+          }
+        }
+
+        return [];
+      };
+
       const recipe = {
         userId,
         name,
         description,
-        prepTime,
-        cookTime,
-        servings,
-        ingredients,
-        instructions,
-        imageUrl,
+        prepTime: Number(prepTime),
+        cookTime: Number(cookTime),
+        totalTime: Number(prepTime) + Number(cookTime),
+        servings: Number(servings),
+        ingredients: safeParse(ingredients),
+        instructions: safeParse(instructions),
+        imageUrls,
         cuisineRegion,
+        cuisineSubregion,
         proteinChoice,
         dietaryRestriction,
         religiousRestriction,
+        authorNotes: safeParse(authorNotes),
+        equipment: safeParse(equipment),
       };
+
       const result = await this.recipeService.addRecipe(recipe);
       res
         .status(200)
         .json({ message: "Recipe successfully added", recipeId: result });
     } catch (error) {
+      console.log(error);
       res.status(500).json({ error: "Server error" });
     }
   }
@@ -190,11 +204,13 @@ class RecipeResource {
         "servings",
         "ingredients",
         "instructions",
-        "imageUrl",
         "cuisineRegion",
+        "cuisineSubregion",
         "proteinChoice",
         "dietaryRestriction",
         "religiousRestriction",
+        "authorNotes",
+        "equipment",
       ];
 
       const inputtedFields = {};
@@ -246,41 +262,6 @@ class RecipeResource {
         return res.status(404).json({ error: result.message });
       }
     } catch (error) {
-      return res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async uploadImage(req, res) {
-    const recipeId = req.params.recipeId;
-    const userId = req.user?.userId;
-    const image = req.file;
-
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    if (!image) {
-      return res.status(400).json({ error: "No image uploaded" });
-    }
-
-    try {
-      const uploadResult = await cloudinaryUpload(image.buffer, "recipes");
-
-      const updatedRecipe = await this.recipeService.updateRecipeImage(
-        userId,
-        recipeId,
-        uploadResult.secure_url
-      );
-
-      if (!updatedRecipe) {
-        return res
-          .status(400)
-          .json({ error: "Recipe not found or forbidden action" });
-      }
-      return res
-        .status(200)
-        .json({ success: true, imageUrl: uploadResult.secure_url });
-    } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -347,101 +328,6 @@ class RecipeResource {
       return res.status(200).json({ success: true, recipe: result });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async getRecipeByName(req, res) {
-    try {
-      const recipeName = req.params.name;
-      const regex = new RegExp(recipeName, "i");
-      const recipes = await this.recipeService.getRecipeByName(regex);
-      if (recipes.length > 0) {
-        res.status(200).json(recipes);
-      } else {
-        res.status(404).json({ error: "Recipe not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async getRecipeByIngredients(req, res) {
-    try {
-      const ingredient = req.params.ingredients;
-      const regex = new RegExp(ingredient, "i");
-      const recipes = await this.recipeService.getRecipeByIngredients(regex);
-
-      if (recipes.length > 0) {
-        res.status(200).json(recipes);
-      } else {
-        res.status(404).json({ error: "Recipe not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async getRecipeByCuisineRegion(req, res) {
-    try {
-      const recipeRegion = req.params.cuisineRegion;
-      const regex = new RegExp(recipeRegion, "i");
-      const recipes = await this.recipeService.getRecipeByCuisineRegion(regex);
-      if (recipes.length > 0) {
-        res.status(200).json(recipes);
-      } else {
-        res.status(404).json({ error: "Recipe not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async getRecipeByProteinChoice(req, res) {
-    try {
-      const recipeProtein = req.params.proteinChoice;
-      const regex = new RegExp(recipeProtein, "i");
-      const recipes = await this.recipeService.getRecipeByProteinChoice(regex);
-      if (recipes.length > 0) {
-        res.status(200).json(recipes);
-      } else {
-        res.status(404).json({ error: "Recipe not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async getRecipeByDietaryRestriction(req, res) {
-    try {
-      const recipeDiet = req.params.dietaryRestriction;
-      const regex = new RegExp(recipeDiet, "i");
-      const recipes = await this.recipeService.getRecipeByDietaryRestriction(
-        regex
-      );
-      if (recipes.length > 0) {
-        res.status(200).json(recipes);
-      } else {
-        res.status(404).json({ error: "Recipe not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async getRecipeByReligiousRestriction(req, res) {
-    try {
-      const recipeReligion = req.params.religiousRestriction;
-      const regex = new RegExp(recipeReligion, "i");
-      const recipes = await this.recipeService.getRecipeByReligiousRestriction(
-        regex
-      );
-      if (recipes.length > 0) {
-        res.status(200).json(recipes);
-      } else {
-        res.status(404).json({ error: "Recipe not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Server error" });
     }
   }
 

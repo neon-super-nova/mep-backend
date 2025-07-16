@@ -96,7 +96,7 @@ class TopRatedRecipeStore {
         religiousRestriction: recipe.religiousRestriction,
         dietaryRestriction: recipe.dietaryRestriction,
         proteinChoice: recipe.proteinChoice,
-        imageUrl: recipe.imageUrl,
+        imageUrls: recipe.imageUrls,
       };
     });
 

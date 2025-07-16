@@ -37,21 +37,6 @@ class RecipeService {
     return { success: true };
   }
 
-  async updateRecipeImage(userId, recipeId, imageUrl) {
-    try {
-      return await this.recipeStore.updateRecipeImage(
-        userId,
-        recipeId,
-        imageUrl
-      );
-    } catch (err) {
-      if (err.message === "RECIPE_NOT_FOUND_OR_FORBIDDEN") {
-        return { error: "Recipe not found or forbidden action" };
-      }
-      throw err;
-    }
-  }
-
   async getAllRecipes() {
     try {
       return await this.recipeStore.getAllRecipes();
@@ -120,54 +105,6 @@ class RecipeService {
       }
       throw err;
     }
-  }
-
-  async getRecipeByName(regex) {
-    return await this.recipeStore.collection
-      .find({ name: { $regex: regex } })
-      .toArray();
-  }
-
-  async getRecipeByIngredients(regex) {
-    return await this.recipeStore.collection
-      .find({
-        ingredients: { $elemMatch: { $regex: regex } },
-      })
-      .toArray();
-  }
-
-  async getRecipeByCuisineRegion(regex) {
-    return await this.recipeStore.collection
-      .find({ cuisineRegion: { $regex: regex } })
-      .toArray();
-  }
-
-  async getRecipeByProteinChoice(regex) {
-    return await this.recipeStore.collection
-      .find({
-        proteinChoice: { $regex: regex },
-      })
-      .toArray();
-  }
-
-  async getRecipeByDietaryRestriction(regex) {
-    return await this.recipeStore.collection
-      .find({
-        dietaryRestriction: {
-          $regex: regex,
-        },
-      })
-      .toArray();
-  }
-
-  async getRecipeByReligiousRestriction(regex) {
-    return await this.recipeStore.collection
-      .find({ religiousRestriction: { $regex: regex } })
-      .toArray();
-  }
-
-  async getRecipesByUser(userId) {
-    return await this.recipeStore.getRecipesByUser(userId);
   }
 
   // dashboard recipes
