@@ -26,6 +26,29 @@ class RecipeService {
     }
   }
 
+  async getRecipePictureCount(recipeId) {
+    try {
+      const count = await this.recipeStore.getRecipePictureCount(recipeId);
+      return { success: true, count: count };
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  }
+
+  async updateRecipePictures(recipeId, userId, images, imageMap) {
+    try {
+      const isUpdated = await this.recipeStore.updateRecipePictures(
+        recipeId,
+        userId,
+        images,
+        imageMap
+      );
+      return { success: isUpdated };
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  }
+
   async deleteRecipe(recipeId, userId) {
     const isDeleted = await this.recipeStore.deleteRecipe(recipeId, userId);
     if (!isDeleted) {

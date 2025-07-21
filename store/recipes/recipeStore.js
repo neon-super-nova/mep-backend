@@ -40,14 +40,10 @@ class RecipeStore {
   }
 
   async updateRecipe(recipeId, userId, recipeFields) {
-    if (!ObjectId.isValid(recipeId)) {
-      throw new Error("Invalid recipeId");
-    }
-
     const objectId = new ObjectId(recipeId);
 
     const result = await this.collection.updateOne(
-      { _id: objectId, userId: userId }, // userId as string
+      { _id: objectId, userId: userId },
       { $set: recipeFields }
     );
 
@@ -58,11 +54,57 @@ class RecipeStore {
     return result.modifiedCount > 0;
   }
 
-  async deleteRecipe(recipeId, userId) {
-    if (!ObjectId.isValid(recipeId)) {
-      throw new Error("Invalid recipeId");
+  async updateRecipePictures(recipeId, userId, images, imageMap) {
+    const id = new ObjectId(recipeId);
+    const recipe = await this.collection.findOne({ _id: id });
+
+    if (!recipe) {
+      throw new Error("No recipe found");
     }
 
+    if (recipe.userId !== userId) {
+      throw new Error("You are not the owner of this recipe.");
+    }
+
+    const currImages = recipe.imageUrls || [];
+    const keys = Object.keys(imageMap);
+
+    let i = 0;
+    for (const key of keys) {
+      const index = Number(key);
+
+      if (index < 0 || index > 2) {
+        throw new Error(`Invalid index ${index}. Must be between 0 and 2.`);
+      }
+
+      if (!images[i]) {
+        throw new Error(`Image index mismatch at index ${index}`);
+      }
+
+      currImages[index] = images[i];
+      i++;
+    }
+    const finalImages = currImages.slice(0, 3);
+
+    const result = await this.collection.updateOne(
+      { _id: id, userId: userId },
+      { $set: { imageUrls: finalImages } }
+    );
+
+    return result.modifiedCount > 0;
+  }
+
+  async getRecipePictureCount(recipeId) {
+    const id = new ObjectId(recipeId);
+    const recipe = await this.collection.findOne({ _id: id });
+    if (!recipe) {
+      throw new Error("No recipe found");
+    }
+    const pictureUrlCount = recipe.imageUrls.length;
+    return pictureUrlCount;
+  }
+
+  async deleteRecipe(recipeId, userId) {
     const objectId = new ObjectId(recipeId);
 
     const result = await this.collection.deleteOne({

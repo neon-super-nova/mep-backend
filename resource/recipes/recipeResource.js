@@ -29,6 +29,18 @@ class RecipeResource {
       recipeIdCheck,
       this.updateRecipe.bind(this)
     );
+    this.router.patch(
+      "/:recipeId/images",
+      authenticateToken,
+      recipeIdCheck,
+      upload.array("images", 3),
+      this.updateRecipePictures.bind(this)
+    );
+    this.router.get(
+      "/:recipeId/recipe-image-count",
+      recipeIdCheck,
+      this.getRecipePictureCount.bind(this)
+    );
     this.router.delete(
       "/:recipeId",
       authenticateToken,
@@ -141,7 +153,6 @@ class RecipeResource {
           try {
             return JSON.parse(input);
           } catch (e) {
-            console.error(`Invalid JSON in field "${fieldName}":`, input);
             throw new Error(`Invalid JSON format in "${fieldName}"`);
           }
         }
@@ -239,6 +250,76 @@ class RecipeResource {
         return res
           .status(400)
           .json({ error: result.message || "Update failed" });
+      }
+    } catch (error) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async updateRecipePictures(req, res) {
+    const recipeId = req.params.recipeId;
+    const userId = req.user?.userId;
+    const images = req.files;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!images || images.length === 0) {
+      return res.status(400).json({ error: "No images provided" });
+    }
+
+    let imageMap;
+    try {
+      imageMap = JSON.parse(req.body.imageMap);
+      if (typeof imageMap !== "object" || Array.isArray(imageMap)) {
+        return res
+          .status(400)
+          .json({ error: "imageMap must be a JSON object" });
+      }
+    } catch (err) {
+      return res.status(400).json({ error: "imageMap is not valid JSON" });
+    }
+
+    try {
+      let imageUrls = [];
+      if (images.length > 0) {
+        const uploadResults = await Promise.all(
+          images.map((file) => cloudinaryUpload(file.buffer, "recipes"))
+        );
+        imageUrls = uploadResults.map((result) => result.secure_url);
+      }
+      const result = await this.recipeService.updateRecipePictures(
+        recipeId,
+        userId,
+        imageUrls,
+        imageMap
+      );
+      if (result.success) {
+        return res
+          .status(200)
+          .json({ message: "Recipe images successfully updated" });
+      } else {
+        return res
+          .status(200)
+          .json({ error: result.message || "Error ocurred" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getRecipePictureCount(req, res) {
+    const recipeId = req.params.recipeId;
+    try {
+      const result = await this.recipeService.getRecipePictureCount(recipeId);
+
+      if (result.success) {
+        return res.status(200).json({ recipeImageCount: result.count });
+      } else {
+        return res
+          .status(400)
+          .json({ error: result.error || "Error fetching" });
       }
     } catch (error) {
       return res.status(500).json({ error: "Server error" });
