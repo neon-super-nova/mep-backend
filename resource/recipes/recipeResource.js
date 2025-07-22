@@ -426,13 +426,10 @@ class RecipeResource {
 
       const result = await this.likeService.like(userId, recipeId);
 
-      if (result.success) {
-        return res.status(200).json({ message: result.success });
-      } else {
-        return res
-          .status(400)
-          .json({ error: result.error || "Could not like recipe" });
+      if (!result.success) {
+        return res.status(400).json({ error: result.message });
       }
+      return res.status(200).json({ success: "Recipe liked" });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }
@@ -449,13 +446,10 @@ class RecipeResource {
 
       const result = await this.likeService.unlike(userId, recipeId);
 
-      if (result.success) {
-        return res.status(200).json({ message: "Recipe successfully unliked" });
-      } else {
-        return res
-          .status(400)
-          .json({ error: result.error || "Could not unlike recipe" });
+      if (!result.success) {
+        return res.status(400).json({ error: result.message });
       }
+      return res.status(200).json({ success: "Recipe unliked" });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }
@@ -478,13 +472,10 @@ class RecipeResource {
         rating,
         comment
       );
-      if (result.success) {
-        return res.status(200).json({ message: "Review successfully added" });
-      } else {
-        return res
-          .status(400)
-          .json({ error: result.error || "Could not add review" });
+      if (!result.success) {
+        return res.status(400).json({ error: result.message });
       }
+      return res.status(200).json({ success: "Review posted" });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }
@@ -500,11 +491,10 @@ class RecipeResource {
       }
 
       const result = await this.reviewService.deleteReview(userId, recipeId);
-      if (result.success) {
-        return res.status(200).json({ message: "Review deleted" });
-      } else {
-        return res.status(400).json({ error: result.error });
+      if (!result.success) {
+        return res.status(400).json({ error: result.message });
       }
+      return res.status(200).json({ success: "Review deleted" });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }
@@ -538,11 +528,10 @@ class RecipeResource {
         fieldsToUpdate
       );
 
-      if (result.success) {
-        return res.status(200).json({ message: "Review successfully updated" });
-      } else {
-        return res.status(400).json({ error: result.error || "Update failed" });
+      if (!result.success) {
+        return res.status(400).json({ error: result.message });
       }
+      return res.status(200).json({ success: "Review updated" });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }

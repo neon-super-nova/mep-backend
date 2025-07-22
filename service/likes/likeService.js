@@ -7,13 +7,10 @@ class LikeService {
 
   async like(userId, recipeId) {
     try {
-      await this.likeStore.likeRecipe(userId, recipeId);
-      return { success: "Recipe liked" };
-    } catch (err) {
-      if (err.message === "Recipe has already been liked") {
-        return { error: err.message };
-      }
-      throw err;
+      await likeStore.likeRecipe(userId, recipeId);
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.message };
     }
   }
 

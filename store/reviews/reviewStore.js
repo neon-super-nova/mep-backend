@@ -1,6 +1,7 @@
 import { reviewCollection } from "./reviewSchema.js";
 import { recipeStatsCollection } from "./recipeStatsSchema.js";
 import { getDatabase } from "../database.js";
+import { ObjectId } from "mongodb";
 
 class ReviewStore {
   constructor() {
@@ -11,7 +12,13 @@ class ReviewStore {
   init() {
     const db = getDatabase();
     this.collection = db.collection(reviewCollection);
+    this.recipeCollection = db.collection("recipes");
     this.recipeStatsCollection = db.collection(recipeStatsCollection);
+  }
+
+  async checkForRecipeId(recipeId) {
+    const id = new ObjectId(recipeId);
+    return Boolean(await this.recipeCollection.findOne({ _id: id }));
   }
 
   async checkForExistingReview(userId, recipeId) {
@@ -25,6 +32,11 @@ class ReviewStore {
 
   async addReview(userId, recipeId, rating, comment = "") {
     try {
+      const recipeCheck = await this.checkForRecipeId(recipeId);
+      if (!recipeCheck) {
+        throw new Error("RECIPE_NOT_FOUND");
+      }
+
       const existingReview = await this.checkForExistingReview(
         userId,
         recipeId
@@ -71,6 +83,11 @@ class ReviewStore {
 
   async deleteReview(userId, recipeId) {
     try {
+      const recipeCheck = await this.checkForRecipeId(recipeId);
+      if (!recipeCheck) {
+        throw new Error("RECIPE_NOT_FOUND");
+      }
+
       const existingReview = await this.checkForExistingReview(
         userId,
         recipeId
@@ -112,6 +129,11 @@ class ReviewStore {
   }
 
   async updateReview(userId, recipeId, fieldsToUpdate) {
+    const recipeCheck = await this.checkForRecipeId(recipeId);
+    if (!recipeCheck) {
+      throw new Error("RECIPE_NOT_FOUND");
+    }
+
     const existingReview = await this.checkForExistingReview(userId, recipeId);
     if (!existingReview) {
       throw new Error("Review does not exist");

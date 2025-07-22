@@ -265,7 +265,7 @@ class UserStore {
             _id: 1,
             name: 1,
             imageUrls: 1,
-            userFullName: name,
+            authorName: name,
             username: username,
           },
         },
@@ -298,14 +298,48 @@ class UserStore {
       (recipe) => new ObjectId(recipe.recipeId)
     );
 
+    if (likedRecipeIds.length === 0) return [];
+
     const likedRecipes = await this.recipeCollection
       .aggregate([
         { $match: { _id: { $in: likedRecipeIds } } },
+        {
+          $lookup: {
+            from: "users",
+            let: { userIdStr: "$userId" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ["$_id", { $toObjectId: "$$userIdStr" }],
+                  },
+                },
+              },
+              {
+                $project: {
+                  firstName: 1,
+                  lastName: 1,
+                  username: 1,
+                },
+              },
+            ],
+            as: "recipeAuthor",
+          },
+        },
+        { $unwind: "$recipeAuthor" },
         {
           $project: {
             _id: 1,
             name: 1,
             imageUrls: 1,
+            authorName: {
+              $concat: [
+                "$recipeAuthor.firstName",
+                " ",
+                "$recipeAuthor.lastName",
+              ],
+            },
+            username: "$recipeAuthor.username",
           },
         },
       ])

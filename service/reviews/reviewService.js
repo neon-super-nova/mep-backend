@@ -10,13 +10,8 @@ class ReviewService {
     try {
       await this.reviewStore.addReview(userId, recipeId, rating, comment);
       return { success: true };
-    } catch (err) {
-      if (
-        err.message === "User has already submitted a review for this recipe"
-      ) {
-        return { error: err.message };
-      }
-      throw err;
+    } catch (error) {
+      return { success: false, message: error.message };
     }
   }
 
@@ -24,11 +19,8 @@ class ReviewService {
     try {
       await this.reviewStore.deleteReview(userId, recipeId);
       return { success: true };
-    } catch (err) {
-      if (err.message === "Review does not exist") {
-        return { error: err.message };
-      }
-      throw err;
+    } catch (error) {
+      return { success: false, message: error.message };
     }
   }
 
@@ -36,11 +28,8 @@ class ReviewService {
     try {
       await this.reviewStore.updateReview(userId, recipeId, fieldsToUpdate);
       return { success: true };
-    } catch (err) {
-      if (err.message === "Review does not exist") {
-        return { error: err.message };
-      }
-      throw err;
+    } catch (error) {
+      return { success: false, message: error.message };
     }
   }
 
