@@ -94,6 +94,9 @@ class RecipeService {
     if (filters.cuisineRegion) {
       queryFilters.cuisineRegion = new RegExp(filters.cuisineRegion, "i");
     }
+    if (filters.cuisineSubregion) {
+      queryFilters.cuisineSubregion = new RegExp(filters.cuisineSubregion, "i");
+    }
     if (filters.proteinChoice) {
       queryFilters.proteinChoice = new RegExp(filters.proteinChoice, "i");
     }

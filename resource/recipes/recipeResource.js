@@ -369,6 +369,7 @@ class RecipeResource {
         servings,
         ingredients,
         cuisineRegion,
+        cuisineSubregion,
         proteinChoice,
         dietaryRestriction,
         religiousRestriction,
@@ -380,6 +381,7 @@ class RecipeResource {
       if (servings) filters.servings = Number(servings);
       if (ingredients) filters.ingredients = ingredients;
       if (cuisineRegion) filters.cuisineRegion = cuisineRegion;
+      if (cuisineSubregion) filters.cuisineSubregion = cuisineSubregion;
       if (proteinChoice) filters.proteinChoice = proteinChoice;
       if (dietaryRestriction) filters.dietaryRestriction = dietaryRestriction;
       if (religiousRestriction)
