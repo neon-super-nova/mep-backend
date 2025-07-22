@@ -73,6 +73,11 @@ class UserResource {
       userIdCheck,
       this.getUserRecipes.bind(this)
     );
+    this.router.get(
+      "/:userId/liked-recipes",
+      userIdCheck,
+      this.getUserLikedRecipes.bind(this)
+    );
 
     // user-info
     this.router.post(
@@ -435,13 +440,27 @@ class UserResource {
   // user-info getters
   async getUserInfo(req, res) {
     const userId = req.params.userId;
-
     try {
       const result = await userInfoService.getUserInfo(userId);
       if (result?.error) {
         return res.status(400).json({ error: result.error || "Error" });
       }
       return res.status(200).json({ userInfo: result });
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getUserLikedRecipes(req, res) {
+    const userId = req.params.userId;
+    try {
+      const likedRecipes = await userService.getUserLikedRecipes(userId);
+      if (likedRecipes?.error) {
+        return res
+          .status(400)
+          .json({ error: likedRecipes.error || "Error ocurred" });
+      }
+      return res.status(200).json({ likedRecipes: likedRecipes });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }

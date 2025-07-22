@@ -274,6 +274,44 @@ class UserStore {
 
     return recipes || [];
   }
+
+  async getUserLikedRecipes(userId) {
+    const id = new ObjectId(userId);
+    const user = await this.collection.findOne({ _id: id });
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+
+    const likedRecipeLookup = await this.likesCollection
+      .aggregate([
+        { $match: { userId: userId } },
+        {
+          $project: {
+            recipeId: 1,
+            _id: 0,
+          },
+        },
+      ])
+      .toArray();
+
+    const likedRecipeIds = likedRecipeLookup.map(
+      (recipe) => new ObjectId(recipe.recipeId)
+    );
+
+    const likedRecipes = await this.recipeCollection
+      .aggregate([
+        { $match: { _id: { $in: likedRecipeIds } } },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            imageUrls: 1,
+          },
+        },
+      ])
+      .toArray();
+    return likedRecipes;
+  }
 }
 
 export const userStore = new UserStore();
