@@ -191,8 +191,51 @@ class ReviewStore {
   }
 
   async getAllRecipeReviews(recipeId) {
-    const reviews = await this.collection.find({ recipeId }).toArray();
-    return reviews || null;
+    const recipeCheck = await this.checkForRecipeId(recipeId);
+    if (!recipeCheck) {
+      throw new Error("RECIPE_NOT_FOUND");
+    }
+
+    const reviews = await this.collection
+      .aggregate([
+        {
+          $match: { recipeId: recipeId },
+        },
+        {
+          $lookup: {
+            from: "users",
+            let: { userIdStr: "$userId" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ["$_id", { $toObjectId: "$$userIdStr" }],
+                  },
+                },
+              },
+              {
+                $project: {
+                  username: 1,
+                },
+              },
+            ],
+            as: "reviewAuthor",
+          },
+        },
+        { $unwind: "$reviewAuthor" },
+        {
+          $project: {
+            recipeId: 1,
+            username: "$reviewAuthor.username",
+            rating: 1,
+            comment: 1,
+            createdAt: 1,
+          },
+        },
+      ])
+      .toArray();
+
+    return reviews || [];
   }
 }
 
