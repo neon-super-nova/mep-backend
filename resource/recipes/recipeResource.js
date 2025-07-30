@@ -389,13 +389,9 @@ class RecipeResource {
 
       const recipes = await this.recipeService.searchRecipes(filters);
 
-      if (recipes.length > 0) {
-        return res.status(200).json({ recipes: recipes });
-      } else {
-        return res
-          .status(400)
-          .json({ error: "No recipes found under such filters" });
-      }
+      return recipes.length > 0
+        ? res.status(200).json({ recipes: recipes })
+        : res.status(200).json({ recipes: [] });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }

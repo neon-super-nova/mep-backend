@@ -267,6 +267,7 @@ class UserStore {
             imageUrls: 1,
             authorName: name,
             username: username,
+            createdAt: 1,
           },
         },
       ])

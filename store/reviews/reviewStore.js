@@ -178,22 +178,33 @@ class ReviewStore {
   }
 
   async getRecipeStats(recipeId) {
-    const review = await this.recipeStatsCollection.findOne({ recipeId });
-    if (!review) {
-      throw new Error("Review not found");
+    const recipeCheck = await this.checkForRecipeId(recipeId);
+    if (!recipeCheck) {
+      throw new Error("RECIPE_NOT_FOUND");
     }
-    return {
-      recipeId: review.recipeId,
-      averageReview: review.averageRating,
-      reviewCount: review.reviewCount,
-      likeCount: review.likeCount,
-    };
+
+    const recipeStats = await this.recipeStatsCollection.findOne({ recipeId });
+    if (!recipeStats) {
+      return "Recipe stats not available yet";
+    } else {
+      return {
+        recipeId: recipeStats.recipeId,
+        averageReview: recipeStats.averageRating,
+        reviewCount: recipeStats.reviewCount,
+        likeCount: recipeStats.likeCount,
+      };
+    }
   }
 
   async getAllRecipeReviews(recipeId) {
     const recipeCheck = await this.checkForRecipeId(recipeId);
     if (!recipeCheck) {
       throw new Error("RECIPE_NOT_FOUND");
+    }
+
+    const reviewCheck = await this.collection.findOne({ recipeId });
+    if (!reviewCheck) {
+      return "Recipe not reviewed yet";
     }
 
     const reviews = await this.collection
@@ -216,6 +227,7 @@ class ReviewStore {
               {
                 $project: {
                   username: 1,
+                  pictureUrl: 1,
                 },
               },
             ],
@@ -227,6 +239,7 @@ class ReviewStore {
           $project: {
             recipeId: 1,
             username: "$reviewAuthor.username",
+            pictureUrl: "$reviewAuthor.pictureUrl",
             rating: 1,
             comment: 1,
             createdAt: 1,

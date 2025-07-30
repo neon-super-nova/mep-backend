@@ -28,14 +28,18 @@ class ReviewService {
     try {
       await this.reviewStore.updateReview(userId, recipeId, fieldsToUpdate);
       return { success: true };
-    } catch (error) {
-      return { success: false, message: error.message };
+    } catch (err) {
+      if (err.message === "Review does not exist") {
+        return { error: err.message };
+      }
+      throw err;
     }
   }
 
   async getRecipeStats(recipeId) {
     try {
-      return await this.reviewStore.getRecipeStats(recipeId);
+      const message = await this.reviewStore.getRecipeStats(recipeId);
+      return message;
     } catch (err) {
       if (err.message === "Review not found") {
         return { error: err.message };
@@ -48,7 +52,7 @@ class ReviewService {
     try {
       const result = await this.reviewStore.getAllRecipeReviews(recipeId);
       if (result.length === 0) {
-        return { error: "No reviews for this recipe" };
+        return "No reviews for this recipe";
       }
       return result;
     } catch (err) {
