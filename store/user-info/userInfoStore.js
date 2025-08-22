@@ -40,58 +40,46 @@ class UserInfoStore {
       throw new Error("USER_INFO_ALREADY_EXISTS");
     }
 
-    const userInfoToAdd = {
+    const insertResult = await this.collection.insertOne({
       userId,
       favoriteCuisine,
       favoriteMeal,
       favoriteDish,
       dietaryRestriction,
-    };
-    const id = ObjectId(userId);
-    await this.collection.insertOne({ userInfoToAdd });
+    });
+
+    const insertedDoc = await this.collection.findOne({
+      _id: insertResult.insertedId,
+    });
+
+    return insertedDoc;
   }
 
   async updateUserInfo(userId, fieldsToUpdate) {
-    const findUser = await this.findUser(userId);
-    if (!findUser) {
-      throw new Error("USER_NOT_FOUND");
-    }
-
-    const checkForPreviousInfo = await this.checkForPreviousInfo(userId);
-    if (!checkForPreviousInfo) {
+    const exists = await this.checkForPreviousInfo(userId);
+    if (!exists) {
       throw new Error("USER_INFO_NOT_FOUND");
     }
 
-    return await this.collection.updateOne(
+    const query = await this.collection.findOneAndUpdate(
       { userId },
-      { $set: fieldsToUpdate }
+      { $set: fieldsToUpdate },
+      { returnDocument: "after", projection: { _id: 0 } }
     );
+
+    return query.value;
   }
 
   //user-info getters
-  async getUserInfo(userId) {
-    const findUser = await this.findUser(userId);
-    if (!findUser) {
-      throw new Error("USER_NOT_FOUND");
-    }
-    const checkForEmptyInfo = await this.checkForPreviousInfo(userId);
-    if (!checkForEmptyInfo) {
-      throw new Error("EMPTY_USER_INFO");
-    }
 
-    const result = await this.collection.findOne(
+  async getUserInfo(userId) {
+    const exists = await this.checkForPreviousInfo(userId);
+    if (!exists) return null;
+
+    return await this.collection.findOne(
       { userId },
-      {
-        projection: {
-          _id: 0,
-          favoriteCuisine: 1,
-          favoriteMeal: 1,
-          favoriteDish: 1,
-          dietaryRestriction: 1,
-        },
-      }
+      { projection: { _id: 0 } }
     );
-    return result || null;
   }
 }
 

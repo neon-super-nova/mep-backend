@@ -55,26 +55,38 @@ class ReviewStore {
 
       // now, update recipeStats collection
       const recipeInfo = await this.recipeStatsCollection.findOne({ recipeId });
-      if (recipeInfo) {
+
+      if (
+        recipeInfo &&
+        typeof recipeInfo.reviewCount === "number" &&
+        !isNaN(recipeInfo.reviewCount)
+      ) {
         const newReviewCount = recipeInfo.reviewCount + 1;
         const newAverageRating =
           (recipeInfo.averageRating * recipeInfo.reviewCount + rating) /
           newReviewCount;
+
         await this.recipeStatsCollection.updateOne(
-          { recipeId: recipeId },
+          { recipeId },
           {
             $set: {
-              averageRating: newAverageRating,
+              averageRating: Number(newAverageRating.toFixed(2)),
               reviewCount: newReviewCount,
             },
           }
         );
       } else {
-        await this.recipeStatsCollection.insertOne({
-          recipeId,
-          averageRating: rating,
-          reviewCount: 1,
-        });
+        // First review ever → insert new stats doc
+        await this.recipeStatsCollection.updateOne(
+          { recipeId },
+          {
+            $setOnInsert: {
+              averageRating: Number(rating),
+              reviewCount: 1,
+            },
+          },
+          { upsert: true }
+        );
       }
     } catch (err) {
       throw err;
@@ -104,7 +116,15 @@ class ReviewStore {
 
         if (newReviewCount === 0) {
           // No reviews left, remove the summary document
-          await this.recipeStatsCollection.deleteOne({ recipeId });
+          await this.recipeStatsCollection.updateOne(
+            { recipeId },
+            {
+              $set: {
+                averageRating: 0,
+                reviewCount: 0,
+              },
+            }
+          );
         } else {
           const totalRatingSum =
             recipeInfo.averageRating * recipeInfo.reviewCount;
@@ -114,8 +134,8 @@ class ReviewStore {
             { recipeId },
             {
               $set: {
-                averageRating: newAverageRating,
-                reviewCount: newReviewCount,
+                averageRating: Number(newAverageRating),
+                reviewCount: Number(newReviewCount),
               },
             }
           );
@@ -164,15 +184,20 @@ class ReviewStore {
 
         await this.recipeStatsCollection.updateOne(
           { recipeId },
-          { $set: { averageRating: newAverageRating } }
+          { $set: { averageRating: Number(newAverageRating) } }
         );
       } else {
         // If no stats found, create one (edge case)
-        await this.recipeStatsCollection.insertOne({
-          recipeId,
-          averageRating: newRating,
-          reviewCount: 1,
-        });
+        await this.recipeStatsCollection.updateOne(
+          { recipeId },
+          {
+            $setOnInsert: {
+              averageRating: Number(newRating),
+              reviewCount: 1,
+            },
+          },
+          { upsert: true }
+        );
       }
     }
   }
@@ -226,6 +251,7 @@ class ReviewStore {
               },
               {
                 $project: {
+                  _id: 1,
                   username: 1,
                   pictureUrl: 1,
                 },
@@ -238,6 +264,7 @@ class ReviewStore {
         {
           $project: {
             recipeId: 1,
+            userId: "$reviewAuthor._id",
             username: "$reviewAuthor.username",
             pictureUrl: "$reviewAuthor.pictureUrl",
             rating: 1,

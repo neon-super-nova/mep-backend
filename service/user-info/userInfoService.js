@@ -13,19 +13,20 @@ class UserInfoService {
     dietaryRestriction
   ) {
     try {
-      await this.userInfoStore.addUserInfo(
+      const result = await this.userInfoStore.addUserInfo(
         userId,
         favoriteCuisine,
         favoriteMeal,
         favoriteDish,
         dietaryRestriction
       );
-      return { success: true };
+      return { success: true, result };
     } catch (err) {
       if (err.message === "USER_NOT_FOUND") {
-        return { error: "User not found" };
-      } else if (err.message === "USER_INFO_ALREADY_EXISTS") {
-        return { error: "User info already submitted" };
+        return { success: false, error: "User not found" };
+      }
+      if (err.message === "USER_INFO_ALREADY_EXISTS") {
+        return { success: false, error: "User info already exists" };
       }
       throw err;
     }
@@ -33,31 +34,24 @@ class UserInfoService {
 
   async updateUserInfo(userId, fieldsToUpdate) {
     try {
-      await this.userInfoStore.updateUserInfo(userId, fieldsToUpdate);
-      return { success: true };
+      const updated = await this.userInfoStore.updateUserInfo(
+        userId,
+        fieldsToUpdate
+      );
+      const fresh = await this.userInfoStore.getUserInfo(userId); // refetch to be sure
+      return { success: true, userInfo: fresh };
     } catch (err) {
-      if (err.message === "USER_NOT_FOUND") {
-        return { error: "User not found" };
-      } else if (err.message === "USER_INFO_NOT_FOUND") {
-        return { error: "Cannot update not existing user info" };
+      if (err.message === "USER_INFO_NOT_FOUND") {
+        return { success: false, error: "User info not found" };
       }
       throw err;
     }
   }
 
-  // user-info getters
   async getUserInfo(userId) {
-    try {
-      return await this.userInfoStore.getUserInfo(userId);
-    } catch (err) {
-      if (err.message === "USER_NOT_FOUND") {
-        return { error: "User not found" };
-      }
-      if (err.message === "EMPTY_USER_INFO") {
-        return { error: "Empty user info" };
-      }
-      throw err;
-    }
+    const userInfo = await this.userInfoStore.getUserInfo(userId);
+    if (!userInfo) return { success: false };
+    return { success: true, userInfo };
   }
 }
 
