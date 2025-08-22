@@ -80,11 +80,6 @@ class UserResource {
     );
 
     // user-info
-    this.router.post(
-      "/user-info",
-      authenticateToken,
-      this.addUserInfo.bind(this)
-    );
     this.router.patch(
       "/user-info",
       authenticateToken,
@@ -367,36 +362,6 @@ class UserResource {
   }
 
   //user-info collection methods
-  async addUserInfo(req, res) {
-    const userId = req.user?.userId;
-    const { favoriteCuisine, favoriteMeal, favoriteDish, dietaryRestriction } =
-      req.body;
-
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    try {
-      const result = await userInfoService.addUserInfo(
-        userId,
-        favoriteCuisine,
-        favoriteMeal,
-        favoriteDish,
-        dietaryRestriction
-      );
-
-      if (result.success) {
-        const fresh = await userInfoService.getUserInfo(userId);
-        return res
-          .status(200)
-          .json({ message: "Success", userInfo: fresh.userInfo });
-      }
-      return res.status(400).json({ error: result.error });
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json({ error: "Server error" });
-    }
-  }
 
   async updateUserInfo(req, res) {
     const userId = req.user?.userId;
@@ -442,14 +407,15 @@ class UserResource {
     const userId = req.params.userId;
     try {
       const result = await userInfoService.getUserInfo(userId);
+
       if (result.success) {
-        return res
-          .status(200)
-          .json({ message: "Success", userInfo: result.userInfo });
-      } else if (result.empty) {
-        return res.status(204).send();
+        return res.status(200).json({
+          message: "Success",
+          userInfo: result.userInfo,
+        });
       }
-      return res.status(400).json({ error: result.error });
+
+      return res.status(400).json({ error: "Invalid request" });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }

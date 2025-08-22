@@ -56,15 +56,10 @@ class UserInfoStore {
   }
 
   async updateUserInfo(userId, fieldsToUpdate) {
-    const exists = await this.checkForPreviousInfo(userId);
-    if (!exists) {
-      throw new Error("USER_INFO_NOT_FOUND");
-    }
-
     const query = await this.collection.findOneAndUpdate(
       { userId },
       { $set: fieldsToUpdate },
-      { returnDocument: "after", projection: { _id: 0 } }
+      { upsert: true, returnDocument: "after", projection: { _id: 0 } }
     );
 
     return query.value;
@@ -73,13 +68,11 @@ class UserInfoStore {
   //user-info getters
 
   async getUserInfo(userId) {
-    const exists = await this.checkForPreviousInfo(userId);
-    if (!exists) return null;
-
-    return await this.collection.findOne(
+    const doc = await this.collection.findOne(
       { userId },
       { projection: { _id: 0 } }
     );
+    return doc;
   }
 }
 

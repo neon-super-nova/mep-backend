@@ -33,24 +33,27 @@ class UserInfoService {
   }
 
   async updateUserInfo(userId, fieldsToUpdate) {
-    try {
-      const updated = await this.userInfoStore.updateUserInfo(
-        userId,
-        fieldsToUpdate
-      );
-      const fresh = await this.userInfoStore.getUserInfo(userId); // refetch to be sure
-      return { success: true, userInfo: fresh };
-    } catch (err) {
-      if (err.message === "USER_INFO_NOT_FOUND") {
-        return { success: false, error: "User info not found" };
-      }
-      throw err;
-    }
+    const updated = await this.userInfoStore.updateUserInfo(
+      userId,
+      fieldsToUpdate
+    );
+    return { success: true, userInfo: updated };
   }
 
   async getUserInfo(userId) {
     const userInfo = await this.userInfoStore.getUserInfo(userId);
-    if (!userInfo) return { success: false };
+    if (!userInfo) {
+      return {
+        success: true,
+        empty: true,
+        userInfo: {
+          favoriteCuisine: "",
+          favoriteMeal: "",
+          favoriteDish: "",
+          dietaryRestriction: [],
+        },
+      };
+    }
     return { success: true, userInfo };
   }
 }
