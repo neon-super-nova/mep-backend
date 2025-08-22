@@ -23,38 +23,6 @@ class UserInfoStore {
     return Boolean(await this.collection.findOne({ userId }));
   }
 
-  async addUserInfo(
-    userId,
-    favoriteCuisine,
-    favoriteMeal,
-    favoriteDish,
-    dietaryRestriction = ""
-  ) {
-    const findUser = await this.findUser(userId);
-    if (!findUser) {
-      throw new Error("USER_NOT_FOUND");
-    }
-
-    const check = await this.checkForPreviousInfo(userId);
-    if (check) {
-      throw new Error("USER_INFO_ALREADY_EXISTS");
-    }
-
-    const insertResult = await this.collection.insertOne({
-      userId,
-      favoriteCuisine,
-      favoriteMeal,
-      favoriteDish,
-      dietaryRestriction,
-    });
-
-    const insertedDoc = await this.collection.findOne({
-      _id: insertResult.insertedId,
-    });
-
-    return insertedDoc;
-  }
-
   async updateUserInfo(userId, fieldsToUpdate) {
     const query = await this.collection.findOneAndUpdate(
       { userId },

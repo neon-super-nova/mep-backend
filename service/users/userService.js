@@ -46,6 +46,13 @@ class UserService {
       return { success: false, message: "Password mismatch" };
     } else if (authenticationStatus === "USER_NOT_FOUND") {
       return { success: false, message: "User not found" };
+    } else if (authenticationStatus === "NOT_VERIFIED") {
+      return {
+        success: false,
+        message: "Verify your account using the token sent to your email",
+      };
+    } else {
+      return { success: false, message: "Error" };
     }
   }
 

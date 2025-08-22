@@ -62,6 +62,10 @@ class UserStore {
       return "USER_NOT_FOUND";
     }
 
+    if (foundUser.verified === false) {
+      return "NOT_VERIFIED";
+    }
+
     if (user.password) {
       const isPasswordCorrect = await bcrypt.compare(
         user.password,
