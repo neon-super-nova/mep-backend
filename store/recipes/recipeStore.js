@@ -160,7 +160,7 @@ class RecipeStore {
 
   // all GET methods for filtering
 
-  async searchRecipes(queryFilters) {
+  async searchRecipesWithFilters(queryFilters) {
     const pipeline = [];
     if (Object.keys(queryFilters).length > 0) {
       pipeline.push({ $match: queryFilters });
@@ -205,10 +205,67 @@ class RecipeStore {
     const recipes = await this.collection.aggregate(pipeline).toArray();
 
     if (recipes.length === 0) {
-      throw new Error("RECIPE_NOT_FOUND");
+      return [];
     }
     return recipes;
   }
+
+  async searchRecipeByName(name) {
+    const foundRecipes = await this.collection
+      .aggregate([
+        {
+          $match: {
+            name: { $regex: new RegExp(name, "i") },
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            let: { userIdStr: "$userId" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ["$_id", { $toObjectId: "$$userIdStr" }],
+                  },
+                },
+              },
+              {
+                $project: {
+                  firstName: 1,
+                  lastName: 1,
+                },
+              },
+            ],
+            as: "recipeAuthor",
+          },
+        },
+        { $unwind: "$recipeAuthor" },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            imageUrls: 1,
+            authorName: {
+              $concat: [
+                "$recipeAuthor.firstName",
+                " ",
+                "$recipeAuthor.lastName",
+              ],
+            },
+          },
+        },
+      ])
+      .toArray();
+
+    if (foundRecipes === 0) {
+      return [];
+    }
+
+    return foundRecipes;
+  }
+
+  //
 
   async getRecipeById(recipeId) {
     const id = new ObjectId(recipeId);

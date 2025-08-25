@@ -53,7 +53,8 @@ class RecipeResource {
     this.router.get("/trending", this.getTrendingRecipes.bind(this));
 
     // all GETs for search filtering
-    this.router.get("/search", this.searchRecipes.bind(this));
+    this.router.get("/search", this.searchRecipesWithFilters.bind(this));
+    this.router.get("/searchByName/:name", this.searchRecipeByName.bind(this));
     this.router.get("/", this.getAllRecipes.bind(this));
     this.router.get("/:recipeId", recipeIdCheck, this.getRecipeById.bind(this));
 
@@ -361,7 +362,7 @@ class RecipeResource {
 
   // all GETs for search filtering
 
-  async searchRecipes(req, res) {
+  async searchRecipesWithFilters(req, res) {
     try {
       const {
         name,
@@ -387,7 +388,9 @@ class RecipeResource {
       if (religiousRestriction)
         filters.religiousRestriction = religiousRestriction;
 
-      const recipes = await this.recipeService.searchRecipes(filters);
+      const recipes = await this.recipeService.searchRecipesWithFilters(
+        filters
+      );
 
       return recipes.length > 0
         ? res.status(200).json({ recipes: recipes })
@@ -396,6 +399,23 @@ class RecipeResource {
       return res.status(500).json({ error: "Server error" });
     }
   }
+
+  async searchRecipeByName(req, res) {
+    const name = req.params.name;
+    try {
+      const recipes = await this.recipeService.searchRecipeByName(name);
+      if (recipes.length != 0) {
+        return res.status(200).json({ recipes: recipes });
+      } else {
+        return res.status(200).json([]);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  //
 
   async getRecipeById(req, res) {
     const recipeId = req.params.recipeId;

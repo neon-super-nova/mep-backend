@@ -70,7 +70,7 @@ class RecipeService {
 
   // all GET methods for filtering
 
-  async searchRecipes(filters) {
+  async searchRecipesWithFilters(filters) {
     const queryFilters = {};
     if (filters.name) {
       queryFilters.name = new RegExp(filters.name, "i");
@@ -113,14 +113,21 @@ class RecipeService {
       );
     }
     try {
-      return await this.recipeStore.searchRecipes(queryFilters);
+      return await this.recipeStore.searchRecipesWithFilters(queryFilters);
     } catch (err) {
-      if (err.message === "RECIPE_NOT_FOUND") {
-        return { error: "Recipes not found" };
-      }
       throw err;
     }
   }
+
+  async searchRecipeByName(name) {
+    try {
+      return await this.recipeStore.searchRecipeByName(name);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  //
 
   async getRecipeById(recipeId) {
     try {
