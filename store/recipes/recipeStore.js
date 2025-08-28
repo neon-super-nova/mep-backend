@@ -39,57 +39,48 @@ class RecipeStore {
     return result.insertedId;
   }
 
-  async updateRecipe(recipeId, userId, recipeFields) {
-    const objectId = new ObjectId(recipeId);
-
-    const result = await this.collection.updateOne(
-      { _id: objectId, userId: userId },
-      { $set: recipeFields }
-    );
-
-    if (result.matchedCount === 0) {
-      throw new Error("No matching recipe found or nothing was updated.");
-    }
-
-    return result.modifiedCount > 0;
-  }
-
-  async updateRecipePictures(recipeId, userId, images, imageMap) {
+  async modifyRecipe(recipeId, userId, recipeFields = {}, images, imageMap) {
     const id = new ObjectId(recipeId);
     const recipe = await this.collection.findOne({ _id: id });
 
     if (!recipe) {
       throw new Error("No recipe found");
     }
-
     if (recipe.userId !== userId) {
       throw new Error("You are not the owner of this recipe.");
     }
 
     const currImages = recipe.imageUrls || [];
-    const keys = Object.keys(imageMap);
 
-    let i = 0;
-    for (const key of keys) {
-      const index = Number(key);
+    if (images.length > 0 && imageMap.length > 0) {
+      let i = 0;
 
-      if (index < 0 || index > 2) {
-        throw new Error(`Invalid index ${index}. Must be between 0 and 2.`);
+      for (let index = 0; index < imageMap.length; index++) {
+        const slot = imageMap[index];
+
+        // Only update slots marked as replaced
+        if (!slot.replaced) continue;
+
+        if (!images[i]) {
+          throw new Error(`Image index mismatch at index ${index}`);
+        }
+
+        currImages[index] = images[i];
+        i++;
       }
 
-      if (!images[i]) {
-        throw new Error(`Image index mismatch at index ${index}`);
-      }
-
-      currImages[index] = images[i];
-      i++;
+      recipeFields.imageUrls = currImages.slice(0, 3); // ensure max 3
     }
-    const finalImages = currImages.slice(0, 3);
 
+    // Update the document (text fields + possibly imageUrls)
     const result = await this.collection.updateOne(
       { _id: id, userId: userId },
-      { $set: { imageUrls: finalImages } }
+      { $set: recipeFields }
     );
+
+    if (result.matchedCount === 0) {
+      throw new Error("No matching recipe found or nothing was updated.");
+    }
 
     return result.modifiedCount > 0;
   }

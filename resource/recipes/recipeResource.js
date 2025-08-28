@@ -26,16 +26,10 @@ class RecipeResource {
     this.router.patch(
       "/:recipeId",
       authenticateToken,
-      recipeIdCheck,
-      this.updateRecipe.bind(this)
-    );
-    this.router.patch(
-      "/:recipeId/images",
-      authenticateToken,
-      recipeIdCheck,
       upload.array("images", 3),
-      this.updateRecipePictures.bind(this)
+      this.modifyRecipe.bind(this)
     );
+
     this.router.get(
       "/:recipeId/recipe-image-count",
       recipeIdCheck,
@@ -190,8 +184,7 @@ class RecipeResource {
       res.status(500).json({ error: "Server error" });
     }
   }
-
-  async updateRecipe(req, res) {
+  async modifyRecipe(req, res) {
     try {
       const recipeId = req.params.recipeId;
       const userId = req.user?.userId;
@@ -200,113 +193,64 @@ class RecipeResource {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      if (description && description.length > 300) {
-        return res.status(400).json({
-          error: "Description must have a maximum of 300 characters.",
-        });
-      }
-
-      const patchFields = req.body;
-
-      const allowedFields = [
-        "name",
-        "description",
-        "prepTime",
-        "cookTime",
-        "servings",
-        "ingredients",
-        "instructions",
-        "cuisineRegion",
-        "cuisineSubregion",
-        "proteinChoice",
-        "dietaryRestriction",
-        "religiousRestriction",
-        "authorNotes",
-        "equipment",
-      ];
-
-      const inputtedFields = {};
-
-      for (const field of allowedFields) {
-        if (field in patchFields) {
-          inputtedFields[field] = patchFields[field];
+      let inputtedFields = {};
+      if (req.body.fields) {
+        try {
+          inputtedFields = JSON.parse(req.body.fields);
+        } catch (err) {
+          return res.status(400).json({ error: "Invalid JSON in fields" });
         }
       }
 
-      if (Object.keys(inputtedFields).length === 0) {
-        return res.status(400).json({ error: "Empty fields" });
+      let imageMap;
+      if (req.body.imageMap) {
+        try {
+          imageMap = JSON.parse(req.body.imageMap);
+        } catch (err) {
+          return res.status(400).json({ error: "Invalid JSON in imageMap" });
+        }
       }
 
-      const result = await this.recipeService.updateRecipe(
+      if (
+        inputtedFields.description &&
+        inputtedFields.description.length > 300
+      ) {
+        return res.status(400).json({
+          error: "Description must be 300 characters or fewer.",
+        });
+      }
+
+      let imageUrls;
+      if (req.files && req.files.length > 0) {
+        const uploadResults = await Promise.all(
+          req.files.map((file) => cloudinaryUpload(file.buffer, "recipes"))
+        );
+        imageUrls = uploadResults.map((r) => r.secure_url);
+      }
+
+      if (
+        Object.keys(inputtedFields).length === 0 &&
+        (!imageUrls || imageUrls.length === 0)
+      ) {
+        return res.status(400).json({ error: "No fields or images provided" });
+      }
+
+      const result = await this.recipeService.modifyRecipe(
         recipeId,
         userId,
-        inputtedFields
+        inputtedFields,
+        imageUrls,
+        imageMap
       );
-
       if (result.success) {
-        return res
-          .status(200)
-          .json({ message: "Updates were successfully made" });
+        return res.status(200).json({ message: "Recipe successfully updated" });
       } else {
         return res
           .status(400)
           .json({ error: result.message || "Update failed" });
       }
-    } catch (error) {
-      return res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async updateRecipePictures(req, res) {
-    const recipeId = req.params.recipeId;
-    const userId = req.user?.userId;
-    const images = req.files;
-
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    if (!images || images.length === 0) {
-      return res.status(400).json({ error: "No images provided" });
-    }
-
-    let imageMap;
-    try {
-      imageMap = JSON.parse(req.body.imageMap);
-      if (typeof imageMap !== "object" || Array.isArray(imageMap)) {
-        return res
-          .status(400)
-          .json({ error: "imageMap must be a JSON object" });
-      }
     } catch (err) {
-      return res.status(400).json({ error: "imageMap is not valid JSON" });
-    }
-
-    try {
-      let imageUrls = [];
-      if (images.length > 0) {
-        const uploadResults = await Promise.all(
-          images.map((file) => cloudinaryUpload(file.buffer, "recipes"))
-        );
-        imageUrls = uploadResults.map((result) => result.secure_url);
-      }
-      const result = await this.recipeService.updateRecipePictures(
-        recipeId,
-        userId,
-        imageUrls,
-        imageMap
-      );
-      if (result.success) {
-        return res
-          .status(200)
-          .json({ message: "Recipe images successfully updated" });
-      } else {
-        return res
-          .status(200)
-          .json({ error: result.message || "Error ocurred" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Server error" });
+      return res.status(500).json({ error: "Server error" });
     }
   }
 

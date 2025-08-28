@@ -13,12 +13,14 @@ class RecipeService {
     return await this.recipeStore.addRecipe(newRecipe);
   }
 
-  async updateRecipe(recipeId, userId, recipeFields) {
+  async modifyRecipe(recipeId, userId, recipeFields, images, imageMap) {
     try {
-      const isUpdated = await this.recipeStore.updateRecipe(
+      const isUpdated = await this.recipeStore.modifyRecipe(
         recipeId,
         userId,
-        recipeFields
+        recipeFields,
+        images,
+        imageMap
       );
       return { success: isUpdated };
     } catch (error) {
@@ -30,20 +32,6 @@ class RecipeService {
     try {
       const count = await this.recipeStore.getRecipePictureCount(recipeId);
       return { success: true, count: count };
-    } catch (err) {
-      return { success: false, message: err.message };
-    }
-  }
-
-  async updateRecipePictures(recipeId, userId, images, imageMap) {
-    try {
-      const isUpdated = await this.recipeStore.updateRecipePictures(
-        recipeId,
-        userId,
-        images,
-        imageMap
-      );
-      return { success: isUpdated };
     } catch (err) {
       return { success: false, message: err.message };
     }
