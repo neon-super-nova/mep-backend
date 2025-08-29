@@ -71,6 +71,13 @@ class RecipeStore {
 
       recipeFields.imageUrls = currImages.slice(0, 3); // ensure max 3
     }
+    // updating total time if changes in cooktime or preptime
+    if ("cookTime" in recipeFields || "prepTime" in recipeFields) {
+      const recipe = await this.collection.findOne({ _id: id });
+      const newCookTime = recipeFields.cookTime ?? recipe.cookTime ?? 0;
+      const newPrepTime = recipeFields.prepTime ?? recipe.prepTime ?? 0;
+      recipeFields.totalTime = newCookTime + newPrepTime;
+    }
 
     // Update the document (text fields + possibly imageUrls)
     const result = await this.collection.updateOne(

@@ -184,6 +184,7 @@ class RecipeResource {
       res.status(500).json({ error: "Server error" });
     }
   }
+
   async modifyRecipe(req, res) {
     try {
       const recipeId = req.params.recipeId;
@@ -195,24 +196,32 @@ class RecipeResource {
 
       let inputtedFields = {};
       if (req.body.fields) {
-        try {
-          inputtedFields = JSON.parse(req.body.fields);
-        } catch (err) {
-          return res.status(400).json({ error: "Invalid JSON in fields" });
-        }
+        inputtedFields =
+          typeof req.body.fields === "string"
+            ? JSON.parse(req.body.fields)
+            : req.body.fields;
       }
 
-      let imageMap;
+      // merge numeric fields
+      if (req.body.cookTime)
+        inputtedFields.cookTime = Number(req.body.cookTime);
+      if (req.body.prepTime)
+        inputtedFields.prepTime = Number(req.body.prepTime);
+      if (req.body.servings)
+        inputtedFields.servings = Number(req.body.servings);
+
+      let imageMap = [];
       if (req.body.imageMap) {
-        try {
+        if (typeof req.body.imageMap === "string") {
           imageMap = JSON.parse(req.body.imageMap);
-        } catch (err) {
-          return res.status(400).json({ error: "Invalid JSON in imageMap" });
+        } else {
+          imageMap = req.body.imageMap;
         }
       }
 
       if (
         inputtedFields.description &&
+        typeof inputtedFields.description === "string" &&
         inputtedFields.description.length > 300
       ) {
         return res.status(400).json({
@@ -220,18 +229,15 @@ class RecipeResource {
         });
       }
 
-      let imageUrls;
-      if (req.files && req.files.length > 0) {
+      let imageUrls = [];
+      if (Array.isArray(req.files) && req.files.length > 0) {
         const uploadResults = await Promise.all(
           req.files.map((file) => cloudinaryUpload(file.buffer, "recipes"))
         );
         imageUrls = uploadResults.map((r) => r.secure_url);
       }
 
-      if (
-        Object.keys(inputtedFields).length === 0 &&
-        (!imageUrls || imageUrls.length === 0)
-      ) {
+      if (Object.keys(inputtedFields).length === 0 && imageUrls.length === 0) {
         return res.status(400).json({ error: "No fields or images provided" });
       }
 
@@ -275,6 +281,8 @@ class RecipeResource {
     try {
       const recipeId = req.params.recipeId;
       const userId = req.user?.userId;
+
+      console.log(">>> req.user in modifyRecipe:", req.user);
 
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
