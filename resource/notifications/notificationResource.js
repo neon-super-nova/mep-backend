@@ -22,6 +22,7 @@ class NotificationResource {
       const notifications = await this.notificationService.getNotifications(
         userId
       );
+      // console.log("notifications fetched are " + notifications);
       return res.status(200).json({ notifications: notifications });
     } catch (err) {
       console.log(err);

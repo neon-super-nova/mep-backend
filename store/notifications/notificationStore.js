@@ -26,6 +26,7 @@ class NotificationStore {
       createdAt: new Date(),
       read: false,
     };
+    console.log(newNotification);
     await this.collection.insertOne(newNotification);
   }
 
