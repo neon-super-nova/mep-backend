@@ -14,6 +14,7 @@ class NotificationStore {
     this.userCollection = db.collection("users");
     this.likesCollection = db.collection("likes");
     this.reviewsCollection = db.collection("reviews");
+    this.userLoginsCollection = db.collection("user-logins");
   }
 
   async createNotification(type, senderId, recipientId, recipeId) {
@@ -22,21 +23,28 @@ class NotificationStore {
       senderId,
       recipientId,
       recipeId,
-      type,
       createdAt: new Date(),
       read: false,
     };
     await this.collection.insertOne(newNotification);
   }
 
-  async getNotifications(recipientId, limit = 5) {
+  async getNotifications(recipientId, lastLoginDate, isNew = true, limit = 5) {
+    const matchCondition = { recipientId: recipientId };
     // getting limit most recent notifications that match recipientId
     // notification type, senderId, recipeId, and createdAt
+
+    if (lastLoginDate && isNew) {
+      matchCondition.createdAt = { $gt: lastLoginDate };
+    }
+
     const notifications = await this.collection
       .aggregate([
-        { $match: { recipientId: recipientId } },
+        {
+          $match: matchCondition,
+        },
         { $sort: { createdAt: -1 } },
-        { limit: limit },
+        { $limit: limit },
         {
           $project: {
             _id: 1,
@@ -50,7 +58,6 @@ class NotificationStore {
       .toArray();
 
     // need to return senderId picture, senderId username, recipe name, recipe.imageUrls[0]?
-
     if (notifications.length === 0) {
       return [];
     }
@@ -87,7 +94,7 @@ class NotificationStore {
         senderPictureUrl: sender?.pictureUrl || "",
         recipeName: recipe.name,
         recipeImageUrl: recipe.imageUrls?.[0] || "",
-        date: notification.date,
+        date: notification.createdAt,
       };
     });
 
@@ -103,7 +110,7 @@ class NotificationStore {
     if (!update) {
       return "Notification not found";
     }
-    return "update made";
+    return "Notification read";
   }
 }
 

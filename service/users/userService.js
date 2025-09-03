@@ -2,11 +2,13 @@ import { userStore } from "../../store/users/userStore.js";
 import { generateToken } from "../../config/serverSessions/jwt.js";
 import { sendVerificationEmail } from "../../config/serverEmails/emailVerification.js";
 import { forgotPasswordStore } from "../../store/forgotPassword/forgotPasswordStore.js";
+import { userLoginsStore } from "../../store/user-logins/userLoginsStore.js";
 
 class UserService {
   constructor() {
     this.userStore = userStore;
     this.forgotPasswordStore = forgotPasswordStore;
+    this.userLoginsStore = userLoginsStore;
   }
 
   async addNewUser(userData) {
@@ -40,6 +42,8 @@ class UserService {
         userId: fullUserData._id.toString(),
         username: fullUserData.username,
       };
+      const userId = fullUserData._id.toString();
+      await this.userLoginsStore.updateUserLastLogin(userId, new Date());
       const token = generateToken(tokenPayload);
       return { success: true, token };
     } else if (authenticationStatus === "CREDENTIAL_MISMATCH") {

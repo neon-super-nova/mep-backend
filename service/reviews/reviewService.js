@@ -1,14 +1,26 @@
-import { recipeStatsCollection } from "../../store/reviews/recipeStatsSchema.js";
 import { reviewStore } from "../../store/reviews/reviewStore.js";
+import { notificationStore } from "../../store/notifications/notificationStore.js";
+import { recipeStore } from "../../store/recipes/recipeStore.js";
 
 class ReviewService {
   constructor() {
     this.reviewStore = reviewStore;
+    this.notificationStore = notificationStore;
+    this.recipeStore = recipeStore;
   }
 
   async addReview(userId, recipeId, rating, comment) {
     try {
       await this.reviewStore.addReview(userId, recipeId, rating, comment);
+      const recipe = await this.recipeStore.getRecipeById(recipeId);
+      if (recipe && recipe.userId != userId) {
+        await this.notificationStore.createNotification(
+          "review",
+          userId,
+          recipe.userId,
+          recipeId
+        );
+      }
       return { success: true };
     } catch (error) {
       return { success: false, message: error.message };

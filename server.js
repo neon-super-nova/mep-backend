@@ -13,8 +13,12 @@ import { reviewStore } from "./store/reviews/reviewStore.js";
 import { likeStore } from "./store/likes/likeStore.js";
 import { topRatedRecipeStore } from "./store/dashboard-recipes/topRatedRecipeStore.js";
 import { trendingRecipeStore } from "./store/dashboard-recipes/trendingRecipeStore.js";
+import { userLoginsStore } from "./store/user-logins/userLoginsStore.js";
+import { notificationStore } from "./store/notifications/notificationStore.js";
+
 import { userResource } from "./resource/users/userResource.js";
 import { recipeResource } from "./resource/recipes/recipeResource.js";
+import { notificationResource } from "./resource/notifications/notificationResource.js";
 
 import { configureGooglePassport } from "./config/oauth/oauth.js";
 import startRefreshJob from "./jobs/refreshJob.js";
@@ -49,10 +53,13 @@ connectDatabase()
     await topRatedRecipeStore.refreshTopRatedRecipeCache();
     await trendingRecipeStore.init();
     await trendingRecipeStore.refreshTrendingRecipeCache();
+    await userLoginsStore.init();
+    await notificationStore.init();
     startRefreshJob();
 
     await app.use("/api/users", userResource.router);
     await app.use("/api/recipes", recipeResource.router);
+    await app.use("/api/notifications", notificationResource.router);
 
     app.get("/", (req, res) => {
       res.send("Server is working");
