@@ -26,23 +26,17 @@ class NotificationStore {
       createdAt: new Date(),
       read: false,
     };
-    console.log(newNotification);
     await this.collection.insertOne(newNotification);
   }
 
-  async getNotifications(recipientId, lastLoginDate, isNew = true, limit = 5) {
-    const matchCondition = { recipientId: recipientId };
-    // getting limit most recent notifications that match recipientId
-    // notification type, senderId, recipeId, and createdAt
-
-    if (lastLoginDate && isNew) {
-      matchCondition.createdAt = { $gt: lastLoginDate };
-    }
-
+  async getNotifications(recipientId, lastLoginDate, limit = 5) {
     const notifications = await this.collection
       .aggregate([
         {
-          $match: matchCondition,
+          $match: {
+            recipientId,
+            // createdAt: { $gte: lastLoginDate },
+          },
         },
         { $sort: { createdAt: -1 } },
         { $limit: limit },
@@ -89,11 +83,12 @@ class NotificationStore {
         (r) => r._id.toString() == notification.recipeId
       );
       return {
-        _id: notification._id,
+        _id: notification.id,
         type: notification.type,
         senderUsername: sender.username,
         senderPictureUrl: sender?.pictureUrl || "",
         recipeName: recipe.name,
+        recipeId: recipe._id,
         recipeImageUrl: recipe.imageUrls?.[0] || "",
         date: notification.createdAt,
       };

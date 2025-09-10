@@ -56,15 +56,16 @@ class ReviewStore {
       // now, update recipeStats collection
       const recipeInfo = await this.recipeStatsCollection.findOne({ recipeId });
 
-      if (
-        recipeInfo &&
-        typeof recipeInfo.reviewCount === "number" &&
-        !isNaN(recipeInfo.reviewCount)
-      ) {
-        const newReviewCount = recipeInfo.reviewCount + 1;
-        const newAverageRating =
-          (recipeInfo.averageRating * recipeInfo.reviewCount + rating) /
-          newReviewCount;
+      if (recipeInfo) {
+        const newReviewCount = recipeInfo.reviewCount
+          ? recipeInfo.reviewCount + 1
+          : 1;
+        // const newReviewCount = recipeInfo.reviewCount + 1;
+
+        const newAverageRating = recipeInfo.averageRating
+          ? (recipeInfo.averageRating * recipeInfo.reviewCount + rating) /
+            newReviewCount
+          : rating;
 
         await this.recipeStatsCollection.updateOne(
           { recipeId },
@@ -229,7 +230,7 @@ class ReviewStore {
 
     const reviewCheck = await this.collection.findOne({ recipeId });
     if (!reviewCheck) {
-      return "Recipe not reviewed yet";
+      return [];
     }
 
     const reviews = await this.collection
@@ -264,7 +265,7 @@ class ReviewStore {
         {
           $project: {
             recipeId: 1,
-            userId: "$reviewAuthor._id",
+            userId: { $toString: "$reviewAuthor._id" },
             username: "$reviewAuthor.username",
             pictureUrl: "$reviewAuthor.pictureUrl",
             rating: 1,
@@ -275,6 +276,7 @@ class ReviewStore {
       ])
       .toArray();
 
+    console.log("Aggregation result:", reviews);
     return reviews || [];
   }
 }

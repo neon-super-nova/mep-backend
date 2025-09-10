@@ -90,6 +90,11 @@ class UserResource {
       userIdCheck,
       this.getUserInfo.bind(this)
     );
+    this.router.get(
+      "/last-login/:userId",
+      userIdCheck,
+      this.getUserLastLogin.bind(this)
+    );
   }
 
   async register(req, res) {
@@ -432,6 +437,20 @@ class UserResource {
       }
       return res.status(200).json({ likedRecipes: likedRecipes });
     } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async getUserLastLogin(req, res) {
+    const userId = req.params.userId;
+    try {
+      const lastLogin = await userInfoService.getUserLastLogin(userId);
+      if (lastLogin != null) {
+        return res.status(200).json(lastLogin);
+      }
+      return res.status(400).json({ error: "Last login not registered" });
+    } catch (err) {
+      console.log(err);
       return res.status(500).json({ error: "Server error" });
     }
   }

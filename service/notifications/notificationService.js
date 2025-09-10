@@ -8,13 +8,11 @@ class NotificationService {
   }
 
   async getNotifications(recipientId) {
-    const lastLoginDate = await this.userLoginsStore.getUserLastLogin(
-      recipientId
-    );
+    // const lastLoginDate = await this.userLoginsStore.getUserLastLogin(
+    //   recipientId
+    // );
     const notifications = await this.notificationStore.getNotifications(
       recipientId,
-      lastLoginDate,
-      true,
       5
     );
     return notifications || [];

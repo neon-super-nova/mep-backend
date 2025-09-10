@@ -63,10 +63,7 @@ class ReviewService {
   async getAllRecipeReviews(recipeId) {
     try {
       const result = await this.reviewStore.getAllRecipeReviews(recipeId);
-      if (result.length === 0) {
-        return "No reviews for this recipe";
-      }
-      return result;
+      return result || [];
     } catch (err) {
       return { error: err.message };
     }

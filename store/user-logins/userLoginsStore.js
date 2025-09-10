@@ -19,8 +19,11 @@ class UserLoginsStore {
   }
 
   async getUserLastLogin(userId) {
-    const user = await this.collection.findOne({ userId });
-    return user ? user.lastLogin : null;
+    const user = await this.collection.findOne(
+      { userId: userId },
+      { projection: { _id: 0 } }
+    );
+    return user ? user : null;
   }
 
   // not sure how useful
