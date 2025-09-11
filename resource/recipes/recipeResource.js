@@ -53,17 +53,17 @@ class RecipeResource {
     this.router.get("/:recipeId", recipeIdCheck, this.getRecipeById.bind(this));
 
     // likes
+    this.router.get(
+      "/:recipeId/like-status",
+      authenticateToken,
+      recipeIdCheck,
+      this.getLikeStatus.bind(this)
+    );
     this.router.post(
       "/:recipeId/like",
       authenticateToken,
       recipeIdCheck,
       this.likeRecipe.bind(this)
-    );
-    this.router.post(
-      "/:recipeId/unlike",
-      authenticateToken,
-      recipeIdCheck,
-      this.unlikeRecipe.bind(this)
     );
 
     // reviews
@@ -383,6 +383,24 @@ class RecipeResource {
   }
 
   // likes
+  async getLikeStatus(req, res) {
+    try {
+      const recipeId = req.params.recipeId;
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const result = await this.likeService.getLikeStatus(userId, recipeId);
+      if (!result.success) {
+        return res.status(400).json({ error: result.error });
+      }
+      return res.status(200).json({ status: result.likeStatus });
+    } catch (err) {
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
   async likeRecipe(req, res) {
     try {
       const recipeId = req.params.recipeId;
@@ -393,31 +411,11 @@ class RecipeResource {
       }
 
       const result = await this.likeService.like(userId, recipeId);
-
+      console.log(result);
       if (!result.success) {
         return res.status(400).json({ error: result.message });
       }
-      return res.status(200).json({ success: "Recipe liked" });
-    } catch (err) {
-      return res.status(500).json({ error: "Server error" });
-    }
-  }
-
-  async unlikeRecipe(req, res) {
-    try {
-      const recipeId = req.params.recipeId;
-      const userId = req.user?.userId;
-
-      if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-
-      const result = await this.likeService.unlike(userId, recipeId);
-
-      if (!result.success) {
-        return res.status(400).json({ error: result.message });
-      }
-      return res.status(200).json({ success: "Recipe unliked" });
+      return res.status(200).json({ status: result.status });
     } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }

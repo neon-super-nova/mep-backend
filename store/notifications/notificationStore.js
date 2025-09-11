@@ -29,7 +29,7 @@ class NotificationStore {
     await this.collection.insertOne(newNotification);
   }
 
-  async getNotifications(recipientId, lastLoginDate, limit = 5) {
+  async getNotifications(recipientId, limit = 5) {
     const notifications = await this.collection
       .aggregate([
         {
@@ -108,6 +108,8 @@ class NotificationStore {
     }
     return "Notification read";
   }
+
+  // method to delete read:true notifications every n amount of days
 }
 
 export const notificationStore = new NotificationStore();

@@ -11,29 +11,31 @@ class LikeService {
 
   async like(userId, recipeId) {
     try {
-      await this.likeStore.likeRecipe(userId, recipeId);
-      const recipe = await this.recipeStore.getRecipeById(recipeId);
-      if (recipe && recipe.userId != userId) {
-        await this.notificationStore.createNotification(
-          "like",
-          userId,
-          recipe.userId,
-          recipeId
-        );
-        console.log("sending like notification");
+      const likeStatus = await this.likeStore.likeRecipe(userId, recipeId);
+      if (likeStatus.status === "liked") {
+        const recipe = await this.recipeStore.getRecipeById(recipeId);
+        if (recipe && recipe.userId != userId) {
+          await this.notificationStore.createNotification(
+            "like",
+            userId,
+            recipe.userId,
+            recipeId
+          );
+          console.log("sending like notification");
+        }
       }
-      return { success: true };
+      return { success: true, status: likeStatus.status };
     } catch (error) {
       return { success: false, message: error.message };
     }
   }
 
-  async unlike(userId, recipeId) {
+  async getLikeStatus(userId, recipeId) {
     try {
-      await this.likeStore.unlikeRecipe(userId, recipeId);
-      return { success: true };
+      const status = await this.likeStore.checkForLike(userId, recipeId);
+      return { success: true, likeStatus: status };
     } catch (error) {
-      return { success: false, message: error.message };
+      return { success: false, error: error.message };
     }
   }
 }

@@ -20,6 +20,9 @@ class LikeStore {
   }
 
   async checkForLike(userId, recipeId) {
+    if ((await this.checkForRecipeId(recipeId)) === false) {
+      throw new Error("RECIPE_NOT_FOUND");
+    }
     return Boolean(await this.collection.findOne({ userId, recipeId }));
   }
 
@@ -31,39 +34,27 @@ class LikeStore {
 
     const alreadyLiked = await this.checkForLike(userId, recipeId);
     if (alreadyLiked) {
-      throw new Error("Recipe has already been liked");
+      // unlike the recipe (aka delete the like)
+      // throw new Error("Recipe has already been liked");
+      await this.collection.deleteOne({ userId, recipeId });
+      await this.recipeStatsCollection.updateOne(
+        { recipeId },
+        { $inc: { likeCount: -1 } }
+      );
+      return { success: true, status: "Recipe unliked" };
+    } else {
+      await this.collection.insertOne({
+        userId: userId,
+        recipeId: recipeId,
+        createdAt: new Date(),
+      });
+      await this.recipeStatsCollection.updateOne(
+        { recipeId },
+        { $inc: { likeCount: 1 } },
+        { upsert: true }
+      );
+      return { success: true, status: "Recipe liked" };
     }
-
-    await this.collection.insertOne({
-      userId: userId,
-      recipeId: recipeId,
-      createdAt: new Date(),
-    });
-    await this.recipeStatsCollection.updateOne(
-      { recipeId },
-      { $inc: { likeCount: 1 } },
-      { upsert: true }
-    );
-    return { success: true };
-  }
-
-  async unlikeRecipe(userId, recipeId) {
-    const recipeCheck = await this.checkForRecipeId(recipeId);
-    if (!recipeCheck) {
-      throw new Error("RECIPE_NOT_FOUND");
-    }
-
-    const alreadyLiked = await this.checkForLike(userId, recipeId);
-    if (!alreadyLiked) {
-      throw new Error("Cannot unlike a recipe that wasn't liked before");
-    }
-
-    await this.collection.deleteOne({ userId, recipeId });
-    await this.recipeStatsCollection.updateOne(
-      { recipeId },
-      { $inc: { likeCount: -1 } }
-    );
-    return { success: true };
   }
 }
 
