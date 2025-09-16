@@ -35,7 +35,7 @@ class NotificationStore {
         {
           $match: {
             recipientId,
-            // createdAt: { $gte: lastLoginDate },
+            read: false,
           },
         },
         { $sort: { createdAt: -1 } },
@@ -83,7 +83,7 @@ class NotificationStore {
         (r) => r._id.toString() == notification.recipeId
       );
       return {
-        _id: notification.id,
+        id: notification._id,
         type: notification.type,
         senderUsername: sender.username,
         senderPictureUrl: sender?.pictureUrl || "",
@@ -106,7 +106,7 @@ class NotificationStore {
     if (!update) {
       return "Notification not found";
     }
-    return "Notification read";
+    return "Notification marked read";
   }
 
   // method to delete read:true notifications every n amount of days

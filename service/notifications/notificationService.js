@@ -17,6 +17,16 @@ class NotificationService {
     );
     return notifications || [];
   }
+
+  async markNotificationAsRead(notificationId) {
+    const update = await this.notificationStore.markNotificationRead(
+      notificationId
+    );
+    if (update === "Notification marked read") {
+      return { success: true };
+    }
+    return { success: false };
+  }
 }
 
 export const notificationService = new NotificationService();
