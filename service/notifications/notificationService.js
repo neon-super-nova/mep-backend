@@ -18,12 +18,12 @@ class NotificationService {
     return notifications || [];
   }
 
-  async markNotificationAsRead(notificationId) {
+  async markNotificationAsRead(notificationIds) {
     const update = await this.notificationStore.markNotificationRead(
-      notificationId
+      notificationIds
     );
-    if (update === "Notification marked read") {
-      return { success: true };
+    if (update.modifiedCount > 0) {
+      return { success: true, markedNotifications: update.modifiedCount };
     }
     return { success: false };
   }

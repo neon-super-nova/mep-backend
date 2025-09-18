@@ -38,15 +38,24 @@ class NotificationStore {
             read: false,
           },
         },
+        {
+          $group: {
+            _id: { recipeId: "$recipeId", type: "$type" },
+            senders: { $push: "$senderId" },
+            createdAt: { $max: "$createdAt" },
+            notificationIds: { $push: "$_id" },
+          },
+        },
         { $sort: { createdAt: -1 } },
         { $limit: limit },
         {
           $project: {
-            _id: 1,
-            type: 1,
-            senderId: 1,
-            recipeId: 1,
+            notificationIds: 1,
+            recipeId: "$_id.recipeId",
+            type: "$_id.type",
+            senders: 1,
             createdAt: 1,
+            _id: 0,
           },
         },
       ])
@@ -57,8 +66,8 @@ class NotificationStore {
       return [];
     }
 
-    const senderIds = notifications.map(
-      (notification) => new ObjectId(notification.senderId)
+    const senderIds = notifications.flatMap((notification) =>
+      (notification.senders || []).map((id) => new ObjectId(id))
     );
 
     const senderInfo = await this.userCollection
@@ -76,37 +85,44 @@ class NotificationStore {
       .toArray();
 
     const allNotificationsInfo = notifications.map((notification) => {
-      const sender = senderInfo.find(
-        (s) => s._id.toString() == notification.senderId
-      );
       const recipe = recipeInfo.find(
         (r) => r._id.toString() == notification.recipeId
       );
+      const firstSender = senderInfo.find(
+        (s) => s._id.toString() == notification.senders[0]
+      );
+      const otherSendersCount = (notification.senders?.length || 0) - 1;
+
       return {
-        id: notification._id,
+        id: notification.notificationIds,
         type: notification.type,
-        senderUsername: sender.username,
-        senderPictureUrl: sender?.pictureUrl || "",
-        recipeName: recipe.name,
-        recipeId: recipe._id,
-        recipeImageUrl: recipe.imageUrls?.[0] || "",
+        recipeName: recipe?.name,
+        recipeId: recipe?._id,
+        recipeImageUrl: recipe?.imageUrls?.[0] || "",
         date: notification.createdAt,
+        firstSenderUsername: firstSender?.username,
+        senderPictureUrl: firstSender?.pictureUrl || "",
+        otherSendersCount,
+        message:
+          otherSendersCount > 0
+            ? `${firstSender?.username} and ${otherSendersCount} other user(s) ${notification.type}d your recipe`
+            : `${firstSender?.username} ${notification.type}d your recipe`,
       };
     });
 
     return allNotificationsInfo;
   }
 
-  async markNotificationRead(notificationId) {
-    const id = new ObjectId(notificationId);
+  async markNotificationRead(notificationIds) {
+    const ids = notificationIds.map((n) => new ObjectId(n));
     const update = await this.collection.updateOne(
-      { _id: id },
+      { _id: { $in: ids } },
       { $set: { read: true } }
     );
     if (!update) {
       return "Notification not found";
     }
-    return "Notification marked read";
+    return update;
   }
 
   // method to delete read:true notifications every n amount of days
