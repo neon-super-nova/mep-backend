@@ -35,7 +35,6 @@ class LikeStore {
     const alreadyLiked = await this.checkForLike(userId, recipeId);
     if (alreadyLiked) {
       // unlike the recipe (aka delete the like)
-      // throw new Error("Recipe has already been liked");
       await this.collection.deleteOne({ userId, recipeId });
       await this.recipeStatsCollection.updateOne(
         { recipeId },
@@ -54,6 +53,34 @@ class LikeStore {
         { upsert: true }
       );
       return { success: true, status: "Recipe liked" };
+    }
+  }
+
+  async recalculateLikeStats(recipeId) {
+    const numOfLikes = await this.collection.countDocuments({ recipeId });
+    await this.recipeStatsCollection.update(
+      { recipeId },
+      {
+        $set: {
+          likeCount: numOfLikes,
+        },
+      },
+      { upsert: true }
+    );
+  }
+
+  async deleteLikesByUser(userId) {
+    const likesByUser = await this.collection.find({ userId }).toArray();
+    const recipesLikedByUser = [
+      ...new Set(likesByUser.map((like) => like.recipeId)),
+    ];
+    if (recipesLikedByUser.length === 0) {
+      return;
+    }
+    await this.collection.deleteMany({ userId });
+
+    for (const recipe of recipesLikedByUser) {
+      await this.recalculateLikeStats(recipe);
     }
   }
 }

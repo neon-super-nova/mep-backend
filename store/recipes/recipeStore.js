@@ -9,6 +9,10 @@ class RecipeStore {
   init() {
     const db = getDatabase();
     this.collection = db.collection(recipeCollection);
+    this.reviewsCollection = db.collection("reviews");
+    this.likesCollection = db.collection("likes");
+    this.recipeStatsCollection = db.collection("recipeStats");
+    this.notificationCollection = db.collection("notifications");
   }
 
   async addRecipe(newRecipe) {
@@ -278,6 +282,32 @@ class RecipeStore {
     return await this.collection
       .find({ userId: new ObjectId(String(userId)) })
       .toArray();
+  }
+
+  async deleteRecipe(recipeId) {
+    const recipe = await this.collection.findOne({
+      _id: new ObjectId(recipeId),
+    });
+    if (!recipe) {
+      throw new Error("RECIPE_NOT_FOUND");
+    }
+    // delete recipeStats doc for this recipeId, reviews, likes, notifications
+    await this.reviewsCollection.deleteMany({ recipeId });
+    await this.likesCollection.deleteMany({ recipeId });
+    await this.recipeStatsCollection.deleteOne({ recipeId });
+    await this.notificationCollection.deleteMany({ recipeId });
+    // and finally delete recipe doc itself
+    await this.collection.deleteOne({ _id: new ObjectId(recipeId) });
+  }
+
+  async deleteAllRecipesByUser(userId) {
+    const userRecipes = await this.collection.find({ userId }).toArray();
+    const count = 0;
+    for (const recipe of userRecipes) {
+      await this.deleteRecipe(recipe._id.toString());
+      count += 1;
+    }
+    console.log("deleted " + count + " recipes");
   }
 }
 

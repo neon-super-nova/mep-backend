@@ -25,4 +25,6 @@ export const userSchema = {
     default: null,
   },
   createdAt: { type: Date, default: Date.now },
+  // add a deleted false, when user deletes account change to true
+  deleted: { type: Boolean, default: false },
 };

@@ -125,6 +125,12 @@ class NotificationStore {
     return update;
   }
 
+  async deleteUserNotifications(userId) {
+    await this.collection.deleteMany({
+      $or: [{ recipientId: userId }, { senderId: userId }],
+    });
+  }
+
   // method to delete read:true notifications every n amount of days
 }
 

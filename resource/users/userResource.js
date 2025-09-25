@@ -95,6 +95,13 @@ class UserResource {
       userIdCheck,
       this.getUserLastLogin.bind(this)
     );
+
+    // delete-user
+    this.router.delete(
+      "/delete/:deleteOption",
+      authenticateToken,
+      this.deleteUser.bind(this)
+    );
   }
 
   async register(req, res) {
@@ -451,6 +458,36 @@ class UserResource {
       return res.status(400).json({ error: "Last login not registered" });
     } catch (err) {
       console.log(err);
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+
+  async deleteUser(req, res) {
+    const userId = req.user?.userId;
+    const deleteOption = req.params.deleteOption;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const onlyOptions = new Set(["full", "partial"]);
+
+    if (!deleteOption || !onlyOptions.has(deleteOption)) {
+      return res
+        .status(400)
+        .json({ error: "Delete option not provided or incorrect" });
+    }
+
+    try {
+      const deletion = await userService.deleteUser(userId, deleteOption);
+      console.log("deletion result " + JSON.stringify(deletion));
+      if (deletion.success) {
+        return res
+          .status(200)
+          .json({ success: true, message: deletion.message });
+      } else {
+        return res.status(400).json({ error: deletion?.error || "error" });
+      }
+    } catch (err) {
       return res.status(500).json({ error: "Server error" });
     }
   }

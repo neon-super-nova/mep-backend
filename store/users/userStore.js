@@ -1,4 +1,9 @@
 import { getDatabase } from "../database.js";
+import { reviewStore } from "../reviews/reviewStore.js";
+import { likeStore } from "../likes/likeStore.js";
+import { notificationStore } from "../notifications/notificationStore.js";
+import { userInfoStore } from "../user-info/userInfoStore.js";
+import { recipeStore } from "../recipes/recipeStore.js";
 import bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
 
@@ -12,6 +17,14 @@ class UserStore {
     this.collection = db.collection("users");
     this.recipeCollection = db.collection("recipes");
     this.likesCollection = db.collection("likes");
+    this.reviewsCollection = db.collection("reviews");
+    this.recipeStatsCollection = db.collection("recipeStats");
+
+    this.reviewStore = reviewStore;
+    this.likeStore = likeStore;
+    this.notificationStore = notificationStore;
+    this.userInfoStore = userInfoStore;
+    this.recipeStore = recipeStore;
 
     await this.collection.createIndex({ email: 1 }, { unique: true });
     await this.collection.createIndex({ username: 1 }, { unique: true });
@@ -350,6 +363,58 @@ class UserStore {
       ])
       .toArray();
     return likedRecipes;
+  }
+
+  async deleteUser(userId, deleteOption) {
+    const existingUser = await this.findUser(userId);
+    if (!existingUser) {
+      throw new Error("USER_NOT_FOUND");
+    }
+
+    // give two options full OR partial DELETE
+
+    if (deleteOption == "partial") {
+      await this.collection.updateOne(
+        { _id: new ObjectId(userId) },
+        {
+          $set: {
+            deleted: true,
+            username: "deletedUser",
+            firstName: "Deleted",
+            lastName: "User",
+            email: null,
+            password: null,
+            pictureUrl: null,
+            googleToken: null,
+          },
+        }
+      );
+      return { message: "Partial delete success" };
+      // FULL_DELETE
+    } else {
+      try {
+        // delete all recipes by user
+        await this.recipeStore.deleteAllRecipesByUser(userId);
+
+        // delete reviews and update new reviewCount and averageRating
+        await this.reviewStore.deleteReviewsByUser(userId);
+
+        // delete likes and update likeCount
+        await this.likeStore.deleteLikesByUser(userId);
+
+        // delete notifications
+        await this.notificationStore.deleteUserNotifications(userId);
+
+        // delete user-info
+        await this.userInfoStore.deleteUserInfo(userId);
+
+        // now delete user
+        await this.collection.deleteOne({ _id: new ObjectId(userId) });
+        return { message: "Full delete success" };
+      } catch (err) {
+        return { error: err || "error occurred" };
+      }
+    }
   }
 }
 

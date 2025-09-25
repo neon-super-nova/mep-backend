@@ -42,6 +42,14 @@ class UserInfoStore {
     );
     return doc;
   }
+
+  async deleteUserInfo(userId) {
+    const user = await this.findUser(userId);
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+    await this.collection.deleteOne({ userId });
+  }
 }
 
 export const userInfoStore = new UserInfoStore();

@@ -235,6 +235,18 @@ class UserService {
       throw err;
     }
   }
+
+  async deleteUser(userId, deleteOption) {
+    try {
+      const query = await this.userStore.deleteUser(userId, deleteOption);
+      return { success: true, message: query.message };
+    } catch (err) {
+      if (err.message === "USER_NOT_FOUND") {
+        return { error: "User not found" };
+      }
+      return { success: false, error: err };
+    }
+  }
 }
 
 export const userService = new UserService();

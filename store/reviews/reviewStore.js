@@ -94,58 +94,71 @@ class ReviewStore {
     }
   }
 
-  async deleteReview(userId, recipeId) {
-    try {
-      const recipeCheck = await this.checkForRecipeId(recipeId);
-      if (!recipeCheck) {
-        throw new Error("RECIPE_NOT_FOUND");
-      }
+  async recalculateReviewStats(recipeId) {
+    const reviews = await this.collection
+      .find({ recipeId }, { projection: { rating: 1 } })
+      .toArray();
 
-      const existingReview = await this.checkForExistingReview(
-        userId,
-        recipeId
+    if (reviews.length === 0) {
+      await this.recipeStatsCollection.updateOne(
+        { recipeId: recipeId },
+        {
+          $set: {
+            reviewCount: 0,
+            averageRating: 0,
+          },
+        },
+        { upsert: true }
       );
-      if (!existingReview) {
-        throw new Error("Review does not exist");
-      }
-      await this.collection.deleteOne({ userId, recipeId });
+      return;
+    }
 
-      // now, update recipeStats collection
-      const recipeInfo = await this.recipeStatsCollection.findOne({ recipeId });
-      if (recipeInfo) {
-        const newReviewCount = recipeInfo.reviewCount - 1;
+    const newTotalRating = reviews.reduce(
+      (sum, review) => sum + Number(review.rating || 0),
+      0
+    );
+    const newAverageRating = newTotalRating / reviews.length;
+    await this.recipeStatsCollection.updateOne(
+      { recipeId },
+      {
+        $set: {
+          averageRating: newAverageRating,
+          reviewCount: reviews.length,
+        },
+      },
+      { upsert: true }
+    );
+  }
 
-        if (newReviewCount === 0) {
-          // No reviews left, remove the summary document
-          await this.recipeStatsCollection.updateOne(
-            { recipeId },
-            {
-              $set: {
-                averageRating: 0,
-                reviewCount: 0,
-              },
-            }
-          );
-        } else {
-          const totalRatingSum =
-            recipeInfo.averageRating * recipeInfo.reviewCount;
-          const newAverageRating = (totalRatingSum - rating) / newReviewCount;
+  async deleteReview(userId, recipeId) {
+    const recipeCheck = await this.checkForRecipeId(recipeId);
+    if (!recipeCheck) {
+      throw new Error("RECIPE_NOT_FOUND");
+    }
 
-          await this.recipeStatsCollection.updateOne(
-            { recipeId },
-            {
-              $set: {
-                averageRating: Number(newAverageRating),
-                reviewCount: Number(newReviewCount),
-              },
-            }
-          );
-        }
-      } else {
-        // pass
-      }
-    } catch (err) {
-      throw err;
+    const existingReview = await this.checkForExistingReview(userId, recipeId);
+    if (!existingReview) {
+      throw new Error("Review does not exist");
+    }
+    await this.collection.deleteOne({ userId, recipeId });
+
+    // now, update recipeStats collection
+    await this.recalculateReviewStats(recipeId);
+  }
+
+  // bulk delete
+  async deleteReviewsByUser(userId) {
+    const reviews = await this.collection
+      .find({ userId }, { projection: { recipeId: 1 } })
+      .toArray();
+    const recipeIds = [...new Set(reviews.map((review) => review.recipeId))];
+    if (recipeIds.length === 0) {
+      return;
+    }
+    await this.collection.deleteMany({ userId });
+
+    for (const recipeId of recipeIds) {
+      await this.recalculateReviewStats(recipeId);
     }
   }
 
