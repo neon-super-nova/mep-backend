@@ -180,7 +180,6 @@ class RecipeResource {
         .status(200)
         .json({ message: "Recipe successfully added", recipeId: result });
     } catch (error) {
-      console.log(error);
       res.status(500).json({ error: "Server error" });
     }
   }
@@ -282,8 +281,6 @@ class RecipeResource {
       const recipeId = req.params.recipeId;
       const userId = req.user?.userId;
 
-      console.log(">>> req.user in modifyRecipe:", req.user);
-
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
       }
@@ -362,7 +359,6 @@ class RecipeResource {
         return res.status(200).json([]);
       }
     } catch (err) {
-      console.log(err);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -411,7 +407,6 @@ class RecipeResource {
       }
 
       const result = await this.likeService.like(userId, recipeId);
-      console.log(result);
       if (!result.success) {
         return res.status(400).json({ error: result.message });
       }

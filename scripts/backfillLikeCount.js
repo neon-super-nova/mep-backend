@@ -17,7 +17,6 @@ const backfillLikeCounts = async () => {
       { upsert: true }
     );
   }
-  console.log("Like counts backfilled successfully.");
   process.exit(0);
 };
 

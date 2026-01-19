@@ -281,7 +281,6 @@ class UserResource {
         .status(200)
         .json({ success: true, userPictureUrl: imageUpload.secure_url });
     } catch (err) {
-      console.log(err);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -457,7 +456,6 @@ class UserResource {
       }
       return res.status(400).json({ error: "Last login not registered" });
     } catch (err) {
-      console.log(err);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -479,7 +477,6 @@ class UserResource {
 
     try {
       const deletion = await userService.deleteUser(userId, deleteOption);
-      console.log("deletion result " + JSON.stringify(deletion));
       if (deletion.success) {
         return res
           .status(200)

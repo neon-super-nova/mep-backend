@@ -14,11 +14,9 @@ const userCreatedAt = async () => {
     }
   );
 
-  console.log("User createdAt added successfully.");
   process.exit(0);
 };
 
 userCreatedAt().catch((err) => {
-  console.log(err);
   process.exit(1);
 });

@@ -289,7 +289,6 @@ class ReviewStore {
       ])
       .toArray();
 
-    console.log("Aggregation result:", reviews);
     return reviews || [];
   }
 }

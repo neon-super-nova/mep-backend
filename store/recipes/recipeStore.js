@@ -307,7 +307,6 @@ class RecipeStore {
       await this.deleteRecipe(recipe._id.toString());
       count += 1;
     }
-    console.log("deleted " + count + " recipes");
   }
 }
 

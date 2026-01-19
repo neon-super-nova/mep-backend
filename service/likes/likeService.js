@@ -12,7 +12,7 @@ class LikeService {
   async like(userId, recipeId) {
     try {
       const likeStatus = await this.likeStore.likeRecipe(userId, recipeId);
-      if (likeStatus.status === "liked") {
+      if (likeStatus.status === "Recipe liked") {
         const recipe = await this.recipeStore.getRecipeById(recipeId);
         if (recipe && recipe.userId != userId) {
           await this.notificationStore.createNotification(
@@ -21,7 +21,6 @@ class LikeService {
             recipe.userId,
             recipeId
           );
-          console.log("sending like notification");
         }
       }
       return { success: true, status: likeStatus.status };

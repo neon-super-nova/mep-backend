@@ -10,11 +10,9 @@ const recipeUpdate = async () => {
     { $unset: { imageUrl: "" } }
   );
 
-  console.log("Deleted field in", result.modifiedCount, "documents");
   process.exit(0);
 };
 
 recipeUpdate().catch((err) => {
-  console.log(err);
   process.exit(1);
 });

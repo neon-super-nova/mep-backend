@@ -14,11 +14,9 @@ const recipeDescription = async () => {
     }
   );
 
-  console.log("Recipe description added successfully.");
   process.exit(0);
 };
 
 recipeDescription().catch((err) => {
-  console.log(err);
   process.exit(1);
 });

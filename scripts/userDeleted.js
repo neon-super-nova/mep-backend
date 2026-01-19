@@ -14,11 +14,9 @@ const userDeleted = async () => {
     }
   );
 
-  console.log("Added deleted: false to user collection successfully");
   process.exit(0);
 };
 
 userDeleted().catch((err) => {
-  console.log("error adding deleted: false to user collection");
   process.exit(1);
 });

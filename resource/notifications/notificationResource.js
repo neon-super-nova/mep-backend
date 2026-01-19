@@ -29,7 +29,6 @@ class NotificationResource {
       );
       return res.status(200).json({ notifications: notifications });
     } catch (err) {
-      console.log(err);
       return res.status(500).json({ error: "Server error" });
     }
   }
@@ -54,7 +53,6 @@ class NotificationResource {
       }
       return res.status(200).json({ message: "Notifications marked as read" });
     } catch (err) {
-      console.log(err);
       return res.status(500).json({ error: "Server error" });
     }
   }
