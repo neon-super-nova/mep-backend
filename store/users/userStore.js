@@ -4,7 +4,7 @@ import { likeStore } from "../likes/likeStore.js";
 import { notificationStore } from "../notifications/notificationStore.js";
 import { userInfoStore } from "../user-info/userInfoStore.js";
 import { recipeStore } from "../recipes/recipeStore.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { ObjectId } from "mongodb";
 
 class UserStore {
@@ -82,7 +82,7 @@ class UserStore {
     if (user.password) {
       const isPasswordCorrect = await bcrypt.compare(
         user.password,
-        foundUser.password
+        foundUser.password,
       );
       return isPasswordCorrect ? "SUCCESS" : "CREDENTIAL_MISMATCH";
     }
@@ -118,7 +118,7 @@ class UserStore {
     }
     await this.collection.updateOne(
       { _id: user._id },
-      { $set: { verified: true }, $unset: { verificationToken: "" } }
+      { $set: { verified: true }, $unset: { verificationToken: "" } },
     );
     return "Email successfully verified";
   }
@@ -135,7 +135,7 @@ class UserStore {
     const newHashedPassword = await bcrypt.hash(trimmedPassword, 10);
     await this.collection.updateOne(
       { email: trimmedEmail },
-      { $set: { password: newHashedPassword } }
+      { $set: { password: newHashedPassword } },
     );
     return "Password updated";
   }
@@ -144,7 +144,7 @@ class UserStore {
     const objectId = ObjectId.createFromHexString(userId);
     if (patchFields.username) {
       const existingUsernameCheck = await this.findByUsername(
-        patchFields.username
+        patchFields.username,
       );
       if (existingUsernameCheck) {
         throw new Error("INVALID_USERNAME");
@@ -152,7 +152,7 @@ class UserStore {
     }
     const result = await this.collection.updateOne(
       { _id: objectId },
-      { $set: patchFields }
+      { $set: patchFields },
     );
     return result.modifiedCount > 0;
   }
@@ -194,7 +194,7 @@ class UserStore {
     const result = await this.collection.findOneAndUpdate(
       { _id: id },
       { $set: { pictureUrl } },
-      { returnDocument: "after" }
+      { returnDocument: "after" },
     );
     return result;
   }
@@ -313,7 +313,7 @@ class UserStore {
       .toArray();
 
     const likedRecipeIds = likedRecipeLookup.map(
-      (recipe) => new ObjectId(recipe.recipeId)
+      (recipe) => new ObjectId(recipe.recipeId),
     );
 
     if (likedRecipeIds.length === 0) return [];
@@ -387,7 +387,7 @@ class UserStore {
             pictureUrl: null,
             googleToken: null,
           },
-        }
+        },
       );
       return { message: "Partial delete success" };
       // FULL_DELETE
