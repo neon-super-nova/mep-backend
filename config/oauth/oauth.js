@@ -1,7 +1,9 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { userStore } from "../../store/users/userStore.js";
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
+
+const { ObjectId } = mongoose.Types;
 
 export function configureGooglePassport() {
   passport.use(
@@ -39,8 +41,8 @@ export function configureGooglePassport() {
         } catch (err) {
           return done(err, null);
         }
-      }
-    )
+      },
+    ),
   );
 
   passport.serializeUser((user, done) => {

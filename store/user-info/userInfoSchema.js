@@ -1,4 +1,6 @@
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
+
+const { ObjectId } = mongoose.Types;
 
 export const userInfoCollection = "user-info";
 

@@ -1,7 +1,8 @@
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
 import { getDatabase } from "../database.js";
 import { notificationCollection } from "./notificationSchema.js";
 
+const { ObjectId } = mongoose.Types;
 class NotificationStore {
   constructor() {
     this.collection = null;
@@ -67,7 +68,7 @@ class NotificationStore {
     }
 
     const senderIds = notifications.flatMap((notification) =>
-      (notification.senders || []).map((id) => new ObjectId(id))
+      (notification.senders || []).map((id) => new ObjectId(id)),
     );
 
     const senderInfo = await this.userCollection
@@ -76,7 +77,7 @@ class NotificationStore {
       .toArray();
 
     const recipeIds = notifications.map(
-      (notification) => new ObjectId(notification.recipeId)
+      (notification) => new ObjectId(notification.recipeId),
     );
 
     const recipeInfo = await this.recipeCollection
@@ -86,10 +87,10 @@ class NotificationStore {
 
     const allNotificationsInfo = notifications.map((notification) => {
       const recipe = recipeInfo.find(
-        (r) => r._id.toString() == notification.recipeId
+        (r) => r._id.toString() == notification.recipeId,
       );
       const firstSender = senderInfo.find(
-        (s) => s._id.toString() == notification.senders[0]
+        (s) => s._id.toString() == notification.senders[0],
       );
       const otherSendersCount = (notification.senders?.length || 0) - 1;
 
@@ -117,7 +118,7 @@ class NotificationStore {
     const ids = notificationIds.map((n) => new ObjectId(n));
     const update = await this.collection.updateOne(
       { _id: { $in: ids } },
-      { $set: { read: true } }
+      { $set: { read: true } },
     );
     if (!update) {
       return "Notification not found";

@@ -1,6 +1,9 @@
 import { recipeCollection } from "./recipeSchema.js";
 import { getDatabase } from "../database.js";
-import { ObjectId, ReturnDocument } from "mongodb";
+import mongoose from "mongoose";
+
+const { ObjectId } = mongoose.Types;
+// const { ReturnDocument } = mongoose.mongo;
 
 class RecipeStore {
   constructor() {
@@ -86,7 +89,7 @@ class RecipeStore {
     // Update the document (text fields + possibly imageUrls)
     const result = await this.collection.updateOne(
       { _id: id, userId: userId },
-      { $set: recipeFields }
+      { $set: recipeFields },
     );
 
     if (result.matchedCount === 0) {

@@ -1,7 +1,9 @@
 import { reviewCollection } from "./reviewSchema.js";
 import { recipeStatsCollection } from "./recipeStatsSchema.js";
 import { getDatabase } from "../database.js";
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
+
+const { ObjectId } = mongoose.Types;
 
 class ReviewStore {
   constructor() {
@@ -26,7 +28,7 @@ class ReviewStore {
       await this.collection.findOne({
         userId,
         recipeId,
-      })
+      }),
     );
   }
 
@@ -39,7 +41,7 @@ class ReviewStore {
 
       const existingReview = await this.checkForExistingReview(
         userId,
-        recipeId
+        recipeId,
       );
       if (existingReview) {
         throw new Error("User has already submitted a review for this recipe");
@@ -74,7 +76,7 @@ class ReviewStore {
               averageRating: Number(newAverageRating.toFixed(2)),
               reviewCount: newReviewCount,
             },
-          }
+          },
         );
       } else {
         // First review ever → insert new stats doc
@@ -86,7 +88,7 @@ class ReviewStore {
               reviewCount: 1,
             },
           },
-          { upsert: true }
+          { upsert: true },
         );
       }
     } catch (err) {
@@ -108,14 +110,14 @@ class ReviewStore {
             averageRating: 0,
           },
         },
-        { upsert: true }
+        { upsert: true },
       );
       return;
     }
 
     const newTotalRating = reviews.reduce(
       (sum, review) => sum + Number(review.rating || 0),
-      0
+      0,
     );
     const newAverageRating = newTotalRating / reviews.length;
     await this.recipeStatsCollection.updateOne(
@@ -126,7 +128,7 @@ class ReviewStore {
           reviewCount: reviews.length,
         },
       },
-      { upsert: true }
+      { upsert: true },
     );
   }
 
@@ -179,7 +181,7 @@ class ReviewStore {
     fieldsToUpdate.createdAt = new Date();
     await this.collection.updateOne(
       { userId, recipeId },
-      { $set: fieldsToUpdate }
+      { $set: fieldsToUpdate },
     );
 
     if (newRating !== null && newRating !== oldRating) {
@@ -198,7 +200,7 @@ class ReviewStore {
 
         await this.recipeStatsCollection.updateOne(
           { recipeId },
-          { $set: { averageRating: Number(newAverageRating) } }
+          { $set: { averageRating: Number(newAverageRating) } },
         );
       } else {
         // If no stats found, create one (edge case)
@@ -210,7 +212,7 @@ class ReviewStore {
               reviewCount: 1,
             },
           },
-          { upsert: true }
+          { upsert: true },
         );
       }
     }

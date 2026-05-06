@@ -1,5 +1,6 @@
 import { getDatabase } from "../database.js";
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
+const { ObjectId } = mongoose.Types;
 
 class TrendingRecipeStore {
   // trending recipes means = most liked recipes within the past week
@@ -79,7 +80,7 @@ class TrendingRecipeStore {
     await this.collection.updateOne(
       { _id: "cache" },
       { $set: cacheDoc },
-      { upsert: true }
+      { upsert: true },
     );
     return cacheDoc;
   }

@@ -1,6 +1,7 @@
 import { likeCollection } from "./likeSchema.js";
 import { getDatabase } from "../database.js";
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
+const { ObjectId } = mongoose.Types;
 
 class LikeStore {
   constructor() {
@@ -38,7 +39,7 @@ class LikeStore {
       await this.collection.deleteOne({ userId, recipeId });
       await this.recipeStatsCollection.updateOne(
         { recipeId },
-        { $inc: { likeCount: -1 } }
+        { $inc: { likeCount: -1 } },
       );
       return { success: true, status: "Recipe unliked" };
     } else {
@@ -50,7 +51,7 @@ class LikeStore {
       await this.recipeStatsCollection.updateOne(
         { recipeId },
         { $inc: { likeCount: 1 } },
-        { upsert: true }
+        { upsert: true },
       );
       return { success: true, status: "Recipe liked" };
     }
@@ -65,7 +66,7 @@ class LikeStore {
           likeCount: numOfLikes,
         },
       },
-      { upsert: true }
+      { upsert: true },
     );
   }
 

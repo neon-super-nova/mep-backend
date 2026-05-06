@@ -5,7 +5,9 @@ import { notificationStore } from "../notifications/notificationStore.js";
 import { userInfoStore } from "../user-info/userInfoStore.js";
 import { recipeStore } from "../recipes/recipeStore.js";
 import bcrypt from "bcryptjs";
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
+
+const { ObjectId } = mongoose.Types;
 
 class UserStore {
   constructor() {

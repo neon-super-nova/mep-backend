@@ -1,4 +1,6 @@
-import { Decimal128, ObjectId } from "mongodb";
+import mongoose from "mongoose";
+
+const { ObjectId, Decimal128 } = mongoose.Types;
 
 export const reviewCollection = "reviews";
 

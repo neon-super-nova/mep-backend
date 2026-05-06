@@ -1,7 +1,9 @@
 import { userInfoCollection } from "./userInfoSchema.js";
 import { userCollection } from "../users/userSchema.js";
 import { getDatabase } from "../database.js";
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
+
+const { ObjectId } = mongoose.Types;
 
 class UserInfoStore {
   constructuor() {
@@ -27,7 +29,7 @@ class UserInfoStore {
     const query = await this.collection.findOneAndUpdate(
       { userId },
       { $set: fieldsToUpdate },
-      { upsert: true, returnDocument: "after", projection: { _id: 0 } }
+      { upsert: true, returnDocument: "after", projection: { _id: 0 } },
     );
 
     return query.value;
@@ -38,7 +40,7 @@ class UserInfoStore {
   async getUserInfo(userId) {
     const doc = await this.collection.findOne(
       { userId },
-      { projection: { _id: 0 } }
+      { projection: { _id: 0 } },
     );
     return doc;
   }

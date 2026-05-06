@@ -1,5 +1,6 @@
 import { getDatabase } from "../database.js";
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
+const { ObjectId } = mongoose.Types;
 
 class TopRatedRecipeStore {
   constructor() {
@@ -85,7 +86,7 @@ class TopRatedRecipeStore {
 
     const fullTopRatedRecipeInfo = topRatedRecipeInfo.map((recipe) => {
       const recipeStat = topRatedRecipes.find(
-        (stat) => stat.recipeId === recipe._id.toString()
+        (stat) => stat.recipeId === recipe._id.toString(),
       );
       return {
         id: recipe._id,
@@ -108,7 +109,7 @@ class TopRatedRecipeStore {
     // first get the trending recipes with full details
     const topRatedRecipes = await this.getTopRatedRecipes(
       minReviewCount,
-      limit
+      limit,
     );
 
     // insert a single cache document in top-rated-recipes collection, using a fixed id "cache" so theres only 1 cache document at all times
@@ -121,7 +122,7 @@ class TopRatedRecipeStore {
     await this.collection.updateOne(
       { _id: cacheDoc._id },
       { $set: cacheDoc },
-      { upsert: true }
+      { upsert: true },
     );
     return cacheDoc;
   }
